@@ -10,6 +10,10 @@ import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
 import StudentPoll from './components/StudentPoll';
 
+const SESSION_KEY = 'umak_active_session';
+const USER_KEY = 'umak_user';
+const DB_KEY = 'umak_db_questions';
+
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('HOME');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -18,30 +22,50 @@ const App: React.FC = () => {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('umak_user');
+    // Initial Load
+    const savedUser = localStorage.getItem(USER_KEY);
     if (savedUser) setCurrentUser(JSON.parse(savedUser));
 
-    const checkSession = () => {
-      const saved = localStorage.getItem('umak_active_session');
-      if (saved) setActiveSession(JSON.parse(saved));
+    const loadSession = () => {
+      const saved = localStorage.getItem(SESSION_KEY);
+      if (saved) {
+        setActiveSession(JSON.parse(saved));
+      } else {
+        setActiveSession(null);
+      }
     };
-    checkSession();
+
+    loadSession();
+
+    // Sync across tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === SESSION_KEY) {
+        loadSession();
+      }
+      if (e.key === USER_KEY) {
+        const user = e.newValue ? JSON.parse(e.newValue) : null;
+        setCurrentUser(user);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    localStorage.setItem('umak_user', JSON.stringify(user));
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
     setView(user.role === 'FACULTY' ? 'FACULTY_DASHBOARD' : 'HOME');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('umak_user');
+    localStorage.removeItem(USER_KEY);
     setView('HOME');
   };
 
   const saveToDatabase = (question: Question) => {
-    const db = JSON.parse(localStorage.getItem('umak_db_questions') || '[]');
+    const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
     const existingIdx = db.findIndex((q: Question) => q.id === question.id);
     
     if (existingIdx > -1) {
@@ -50,7 +74,7 @@ const App: React.FC = () => {
       db.push({ ...question, creatorId: currentUser?.id });
     }
     
-    localStorage.setItem('umak_db_questions', JSON.stringify(db));
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
   };
 
   const handleSaveDraft = (question: Question) => {
@@ -70,9 +94,12 @@ const App: React.FC = () => {
       responses: {},
       startTime: Date.now(),
     };
-    localStorage.setItem('umak_active_session', JSON.stringify(newSession));
+    
+    localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
     setActiveSession(newSession);
     setView('FACULTY_LIVE');
+    
+    // Trigger storage event for same tab if needed (optional, setActiveSession already does it)
   };
 
   const handleEditDraft = (question: Question) => {
@@ -81,17 +108,20 @@ const App: React.FC = () => {
   };
 
   const handleJoinSession = (code: string) => {
-    const saved = localStorage.getItem('umak_active_session');
+    // Always refresh from storage to get latest
+    const saved = localStorage.getItem(SESSION_KEY);
+    const normalizedCode = code.trim();
+
     if (saved) {
       const session: Session = JSON.parse(saved);
-      if (session.accessCode === code && session.status !== 'ended') {
+      if (session.accessCode === normalizedCode && session.status !== 'ended') {
         setStudentSession(session);
         setView('STUDENT_POLL');
       } else {
-        alert('Invalid or expired session code.');
+        alert(`Access Denied: The code "${normalizedCode}" does not match any active sessions.`);
       }
     } else {
-      alert('No active session found.');
+      alert('Entry Failed: There are no active academic sessions running at the moment.');
     }
   };
 
@@ -121,7 +151,7 @@ const App: React.FC = () => {
       case 'FACULTY_LIVE':
         return activeSession ? (
           <LiveSession session={activeSession} onEnd={() => {
-            localStorage.removeItem('umak_active_session');
+            localStorage.removeItem(SESSION_KEY);
             setActiveSession(null);
             setView('FACULTY_DASHBOARD');
           }} />
