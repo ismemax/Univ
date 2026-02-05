@@ -45,7 +45,7 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
             <Icons.Book />
           </div>
           <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Faculty Dashboard</h2>
-          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold text-pretty">
+          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold">
             Create academic discussion points, launch live interactive sessions, and download comprehensive class participation reports.
           </p>
           <button
@@ -62,7 +62,7 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
             <Icons.IDBadge />
           </div>
           <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Student Access</h2>
-          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold text-pretty">
+          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold">
             Participate in live classroom polls and discussions. Simply enter the proctor code provided by your instructor to begin.
           </p>
 

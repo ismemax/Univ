@@ -233,8 +233,7 @@ const App: React.FC = () => {
       case 'HOME':
         return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
       case 'FACULTY_DASHBOARD':
-        // Explicitly check role to prevent "nothing" screen during state transition
-        if (currentUser && currentUser.role === 'FACULTY') {
+        if (currentUser?.role === 'FACULTY') {
           return (
             <FacultyDashboard
               user={currentUser}
@@ -243,14 +242,6 @@ const App: React.FC = () => {
               onEditDraft={(a: Assessment) => { setEditingAssessment(a); setView('FACULTY_EDIT'); }}
             />
           );
-        }
-        // If we are in this state but user state hasn't moved yet, try to recover from localStorage
-        const recoveredUser = localStorage.getItem(USER_KEY);
-        if (recoveredUser && JSON.parse(recoveredUser).role === 'FACULTY') {
-          // We'll let the next render cycle pick up the state, but for now show Home or a loader
-          return <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="w-12 h-12 border-4 border-umak-blue border-t-transparent rounded-full animate-spin"></div>
-          </div>;
         }
         return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
       case 'FACULTY_CREATE':
