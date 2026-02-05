@@ -24,3 +24,9 @@ export const Icons = {
     </svg>
   )
 };
+
+export const STORAGE_KEYS = {
+  SESSION: 'umak_active_session',
+  USER: 'umak_user',
+  QUESTIONS: 'umak_db_questions',
+};

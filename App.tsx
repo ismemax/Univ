@@ -10,9 +10,11 @@ import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
 import StudentPoll from './components/StudentPoll';
 
-const SESSION_KEY = 'umak_active_session';
-const USER_KEY = 'umak_user';
-const DB_KEY = 'umak_db_questions';
+import { Icons, STORAGE_KEYS } from './constants';
+
+const SESSION_KEY = STORAGE_KEYS.SESSION;
+const USER_KEY = STORAGE_KEYS.USER;
+const DB_KEY = STORAGE_KEYS.QUESTIONS;
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('HOME');
@@ -21,36 +23,59 @@ const App: React.FC = () => {
   const [studentSession, setStudentSession] = useState<Session | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
+  // Sync across tabs and initial load
   useEffect(() => {
-    // Initial Load
-    const savedUser = localStorage.getItem(USER_KEY);
-    if (savedUser) setCurrentUser(JSON.parse(savedUser));
-
     const loadSession = () => {
       const saved = localStorage.getItem(SESSION_KEY);
-      if (saved) {
-        setActiveSession(JSON.parse(saved));
-      } else {
-        setActiveSession(null);
+      let session: Session | null = null;
+      try {
+        session = saved ? JSON.parse(saved) : null;
+      } catch (e) {
+        console.error("Failed to parse session", e);
       }
+
+      setActiveSession(session);
+
+      // Restore view if we are faculty and have an active session
+      // This ensures that refreshing the page doesn't kick the faculty out of the live view
+      if (session && session.status === 'active' && !studentSession) {
+        const savedUser = localStorage.getItem(USER_KEY);
+        const user = savedUser ? JSON.parse(savedUser) : null;
+        if (user && user.role === 'FACULTY' && view === 'HOME') {
+          setView('FACULTY_LIVE');
+        }
+      }
+
+      // Update student session if they are currently viewing a poll
+      setStudentSession(current => {
+        if (!current) return null;
+        if (!session || session.id !== current.id) {
+          return null; // Session closed or replaced
+        }
+        return { ...current, ...session };
+      });
     };
+
+    const savedUser = localStorage.getItem(USER_KEY);
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse user", e);
+      }
+    }
 
     loadSession();
 
-    // Sync across tabs
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === SESSION_KEY) {
+      if (e.key === SESSION_KEY || e.key === USER_KEY) {
         loadSession();
-      }
-      if (e.key === USER_KEY) {
-        const user = e.newValue ? JSON.parse(e.newValue) : null;
-        setCurrentUser(user);
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [view]); // Re-run when view changes to allow redirect logic to trigger
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -67,13 +92,13 @@ const App: React.FC = () => {
   const saveToDatabase = (question: Question) => {
     const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
     const existingIdx = db.findIndex((q: Question) => q.id === question.id);
-    
+
     if (existingIdx > -1) {
       db[existingIdx] = { ...question, creatorId: currentUser?.id };
     } else {
       db.push({ ...question, creatorId: currentUser?.id });
     }
-    
+
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   };
 
@@ -94,11 +119,11 @@ const App: React.FC = () => {
       responses: {},
       startTime: Date.now(),
     };
-    
+
     localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
     setActiveSession(newSession);
     setView('FACULTY_LIVE');
-    
+
     // Trigger storage event for same tab if needed (optional, setActiveSession already does it)
   };
 
@@ -110,18 +135,29 @@ const App: React.FC = () => {
   const handleJoinSession = (code: string) => {
     // Always refresh from storage to get latest
     const saved = localStorage.getItem(SESSION_KEY);
-    const normalizedCode = code.trim();
+    const normalizedCode = code.trim().toUpperCase();
 
     if (saved) {
-      const session: Session = JSON.parse(saved);
-      if (session.accessCode === normalizedCode && session.status !== 'ended') {
-        setStudentSession(session);
-        setView('STUDENT_POLL');
-      } else {
-        alert(`Access Denied: The code "${normalizedCode}" does not match any active sessions.`);
+      try {
+        const session: Session = JSON.parse(saved);
+        // Robust comparison: normalize both sides to strings and trim
+        if (String(session.accessCode).trim().toUpperCase() === normalizedCode) {
+          if (session.status === 'ended') {
+            alert('Session Ended: This session has already concluded. Please contact your instructor for a new session code.');
+          } else {
+            console.log("Success: Joining session", session.id);
+            setStudentSession(session);
+            setView('STUDENT_POLL');
+          }
+        } else {
+          alert(`Access Denied: The code "${normalizedCode}" does not match any active sessions. Please verify the code and try again.`);
+        }
+      } catch (e) {
+        console.error("Join error:", e);
+        alert('Data Error: The active session data is corrupted. Please ask the instructor to restart the session.');
       }
     } else {
-      alert('Entry Failed: There are no active academic sessions running at the moment.');
+      alert('Entry Failed: There are no active academic sessions detected. Note: Sessions are shared only within the same browser origin.');
     }
   };
 
@@ -133,20 +169,20 @@ const App: React.FC = () => {
         return <Login onLogin={handleLogin} onCancel={() => setView('HOME')} />;
       case 'FACULTY_DASHBOARD':
         return currentUser?.role === 'FACULTY' ? (
-          <FacultyDashboard 
-            user={currentUser} 
-            onCreateNew={() => { setEditingQuestion(null); setView('FACULTY_CREATE'); }} 
+          <FacultyDashboard
+            user={currentUser}
+            onCreateNew={() => { setEditingQuestion(null); setView('FACULTY_CREATE'); }}
             onStartSession={handleCreateSession}
             onEditDraft={handleEditDraft}
           />
         ) : <Home setView={setView} onJoin={handleJoinSession} />;
       case 'FACULTY_CREATE':
       case 'FACULTY_EDIT':
-        return <QuestionnaireCreator 
+        return <QuestionnaireCreator
           initialData={editingQuestion || undefined}
-          onCreate={handleCreateSession} 
+          onCreate={handleCreateSession}
           onSaveDraft={handleSaveDraft}
-          onCancel={() => setView('FACULTY_DASHBOARD')} 
+          onCancel={() => setView('FACULTY_DASHBOARD')}
         />;
       case 'FACULTY_LIVE':
         return activeSession ? (
@@ -170,9 +206,9 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header 
-        currentUser={currentUser} 
-        onHome={() => setView('HOME')} 
+      <Header
+        currentUser={currentUser}
+        onHome={() => setView('HOME')}
         onLogin={() => setView('LOGIN')}
         onDashboard={() => setView('FACULTY_DASHBOARD')}
         onLogout={handleLogout}

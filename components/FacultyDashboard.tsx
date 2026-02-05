@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Question, QuestionType } from '../types';
+import { STORAGE_KEYS } from '../constants';
 
 interface FacultyDashboardProps {
   user: User;
@@ -13,13 +14,13 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
   const [questions, setQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
-    const db = JSON.parse(localStorage.getItem('umak_db_questions') || '[]');
+    const db = JSON.parse(localStorage.getItem(STORAGE_KEYS.QUESTIONS) || '[]');
     setQuestions([...db].reverse());
   }, []);
 
   const deleteQuestion = (id: string) => {
     const updated = questions.filter(q => q.id !== id);
-    localStorage.setItem('umak_db_questions', JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updated));
     setQuestions(updated);
   };
 
@@ -30,7 +31,7 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
           <h1 className="text-3xl font-black text-[#004A98]">Faculty Dashboard</h1>
           <p className="text-slate-600 font-semibold">Academic Assessment Management</p>
         </div>
-        <button 
+        <button
           onClick={onCreateNew}
           className="bg-[#004A98] text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-[#004A98]/20 hover:bg-[#003875] transition-all flex items-center gap-2 w-fit"
         >
@@ -57,11 +58,10 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
             <div key={q.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-2">
-                  <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
-                    q.type === QuestionType.MULTIPLE_CHOICE ? 'bg-blue-50 text-blue-700' :
-                    q.type === QuestionType.TRUE_FALSE ? 'bg-green-50 text-green-700' : 
-                    q.type === QuestionType.RATING_SCALE ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-700'
-                  }`}>
+                  <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${q.type === QuestionType.MULTIPLE_CHOICE ? 'bg-blue-50 text-blue-700' :
+                      q.type === QuestionType.TRUE_FALSE ? 'bg-green-50 text-green-700' :
+                        q.type === QuestionType.RATING_SCALE ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-700'
+                    }`}>
                     {q.type.replace('_', ' ')}
                   </span>
                   {q.isDraft && (
@@ -72,26 +72,26 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
                 </div>
                 <span className="text-[9px] font-black text-slate-400">{new Date(q.createdAt).toLocaleDateString()}</span>
               </div>
-              
+
               <h4 className="text-lg font-black text-slate-900 mb-6 line-clamp-2 min-h-[3.5rem] leading-tight">{q.text}</h4>
-              
+
               <div className="flex items-center gap-3 mt-auto">
                 {q.isDraft ? (
-                  <button 
+                  <button
                     onClick={() => onEditDraft(q)}
                     className="flex-1 bg-white border border-[#004A98] text-[#004A98] hover:bg-[#004A98] hover:text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider"
                   >
                     Edit Draft
                   </button>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => onStartSession(q)}
                     className="flex-1 bg-[#004A98] text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider shadow-sm hover:shadow-md"
                   >
                     Launch Live
                   </button>
                 )}
-                <button 
+                <button
                   onClick={() => deleteQuestion(q.id)}
                   className="p-2.5 text-slate-400 hover:text-red-500 transition-colors"
                   title="Delete"

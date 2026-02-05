@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Session } from '../types';
-import { Icons } from '../constants';
+import { Icons, STORAGE_KEYS } from '../constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 interface Notification {
@@ -21,43 +21,65 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   const [isPaused, setIsPaused] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Simulation: Generate random responses periodically
+  // Sync state when initialSession changes (e.g., from another tab or restart)
+  useEffect(() => {
+    setSession(initialSession);
+    setTimeLeft(initialSession.question.timeLimit);
+  }, [initialSession]);
+
+  // Timer Effect: Decrement timeLeft every second
   useEffect(() => {
     if (timeLeft <= 0 || session.status === 'ended' || isPaused) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => Math.max(0, prev - 1));
+      setTimeLeft(prev => {
+        const newTime = Math.max(0, prev - 1);
+        // When timer reaches 0, end the session
+        if (newTime === 0 && session.status !== 'ended') {
+          setSession(current => {
+            const endedSession = { ...current, status: 'ended' as const };
+            localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(endedSession));
+            return endedSession;
+          });
+        }
+        return newTime;
+      });
     }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, session.status, isPaused]);
+
+  // Simulation Effect: Generate random responses periodically
+  // We use a stable dependency array to ensure the responder is not cleared every second by the timer
+  useEffect(() => {
+    if (session.status === 'ended' || isPaused) return;
 
     const responder = setInterval(() => {
       if (Math.random() > 0.4) {
-        const randIdx = Math.floor(Math.random() * (session.question.options?.length || 1));
-        
         setSession(prev => {
           const next = { ...prev };
           next.participantsCount += 1;
+          const optionsCount = session.question.options?.length || 1;
+          const randIdx = Math.floor(Math.random() * optionsCount);
           next.responses[randIdx] = (next.responses[randIdx] || 0) + 1;
-          
+
           // Add notification for faculty
           const newNotif: Notification = {
             id: Math.random().toString(36).substring(7),
             message: `Student submitted response #${next.participantsCount}`,
             timestamp: Date.now()
           };
-          
+
           setNotifications(curr => [newNotif, ...curr].slice(0, 5));
-          
-          localStorage.setItem('umak_active_session', JSON.stringify(next));
+
+          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(next));
           return next;
         });
       }
     }, 2500);
 
-    return () => {
-      clearInterval(timer);
-      clearInterval(responder);
-    };
-  }, [timeLeft, session.status, isPaused, session.question.options.length]);
+    return () => clearInterval(responder);
+  }, [session.status, isPaused, session.question.options.length]);
 
   // Automatically clear old notifications after 4 seconds
   useEffect(() => {
@@ -92,8 +114,8 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
       {/* Toast Notifications */}
       <div className="fixed top-24 right-6 z-[60] flex flex-col gap-3 pointer-events-none">
         {notifications.map((n) => (
-          <div 
-            key={n.id} 
+          <div
+            key={n.id}
             className="bg-white border-l-4 border-[#004A98] shadow-xl px-6 py-4 rounded-r-xl flex items-center gap-3 animate-in slide-in-from-right-full duration-300 pointer-events-auto"
           >
             <div className="w-8 h-8 bg-[#004A98]/10 rounded-full flex items-center justify-center">
@@ -139,18 +161,17 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             </div>
 
             <div className="flex gap-4 mt-10">
-              <button 
+              <button
                 onClick={() => setIsPaused(!isPaused)}
-                className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${
-                  isPaused 
-                  ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20' 
+                className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${isPaused
+                  ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
                   : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 {isPaused ? 'Resume Session' : 'Pause Session'}
               </button>
-              <button 
-                onClick={() => setTimeLeft(0)}
+              <button
+                onClick={onEnd}
                 className="flex-1 bg-white border-2 border-red-200 text-red-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-red-50 transition-colors"
               >
                 Terminate Poll
@@ -174,8 +195,8 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                       <span className="font-black text-[#004A98]">{count} Responded ({pct}%)</span>
                     </div>
                     <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-                      <div 
-                        className="bg-[#004A98] h-full transition-all duration-700 ease-out" 
+                      <div
+                        className="bg-[#004A98] h-full transition-all duration-700 ease-out"
                         style={{ width: `${pct}%` }}
                       ></div>
                     </div>
@@ -190,7 +211,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
         <div className="lg:w-[400px] space-y-8">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col items-center text-center">
             <div className="p-6 bg-white rounded-2xl mb-4 border-2 border-slate-100 shadow-inner">
-               <Icons.QR />
+              <Icons.QR />
             </div>
             <h3 className="font-black text-[#004A98] mb-1 text-lg uppercase tracking-tight">Access QR Code</h3>
             <p className="text-[10px] font-black text-slate-400 mb-6 uppercase tracking-[0.2em]">Scan to participate</p>
@@ -219,12 +240,12 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                       <Cell key={`cell-${index}`} fill={COLORS_PALETTE[index % COLORS_PALETTE.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ fontWeight: '900', borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
+                  <Tooltip
+                    contentStyle={{ fontWeight: '900', borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                   />
-                  <Legend 
+                  <Legend
                     wrapperStyle={{ fontWeight: '900', textTransform: 'uppercase', fontSize: '10px' }}
-                    layout="horizontal" verticalAlign="bottom" align="center" 
+                    layout="horizontal" verticalAlign="bottom" align="center"
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -232,7 +253,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
           </div>
 
           <div className="flex flex-col gap-4">
-            <button 
+            <button
               onClick={handleExport}
               className="w-full bg-white border-2 border-slate-200 py-4 rounded-xl font-black text-slate-700 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-3 uppercase text-[10px] tracking-widest"
             >
@@ -247,5 +268,6 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     </div>
   );
 };
+
 
 export default LiveSession;
