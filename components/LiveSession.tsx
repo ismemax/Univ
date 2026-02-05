@@ -4,6 +4,8 @@ import { Session } from '../types';
 import { Icons, STORAGE_KEYS } from '../constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { db, ref, update } from '../firebase';
+import { secureLog } from '../utils/securityUtils';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Notification {
   id: string;
@@ -84,96 +86,130 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
 
   const handlePrintPDF = async () => {
     try {
-      const { jsPDF } = await import('jspdf');
-      const html2canvas = (await import('html2canvas')).default;
+      secureLog("Starting PDF generation...");
+      const jsPDFModule = await import('jspdf');
+      const jsPDF = jsPDFModule.jsPDF || (jsPDFModule as any).default || jsPDFModule;
+
+      if (!jsPDF) throw new Error("jsPDF library could not be loaded.");
 
       const doc = new jsPDF('p', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 15;
+      const contentWidth = pageWidth - (margin * 2);
 
       // -- Header --
-      doc.setFillColor(0, 74, 152); // UMAK blue
+      doc.setFillColor(0, 74, 152);
       doc.rect(0, 0, pageWidth, 40, 'F');
-
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.text('UNIVERSITY OF MAKATI', 15, 18);
+      doc.text('UNIVERSITY OF MAKATI', margin, 18);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text('OFFICIAL ACADEMIC ASSESSMENT REPORT', 15, 25);
-      doc.text(`SESSION ID: ${session.accessCode} | DATE: ${new Date().toLocaleDateString()}`, 15, 32);
+      doc.text('OFFICIAL ACADEMIC ASSESSMENT REPORT', margin, 25);
+      doc.text(`SESSION ID: ${session.accessCode} | DATE: ${new Date().toLocaleDateString()}`, margin, 32);
 
       let currentY = 55;
 
-      // -- Metadata --
-      doc.setTextColor(50, 50, 50);
+      // -- Title Section --
+      doc.setTextColor(0, 74, 152);
       doc.setFontSize(16);
-      doc.text(session.questions[0]?.text.substring(0, 60) + '...', 15, currentY);
-      currentY += 10;
+      doc.setFont('helvetica', 'bold');
+      const docTitle = session.questions?.[0]?.text || "Academic Session Report";
+      const titleLines = doc.splitTextToSize(docTitle, contentWidth);
+      doc.text(titleLines, margin, currentY);
+      currentY += (titleLines.length * 7) + 5;
 
-      doc.setFontSize(11);
-      doc.text(`Total Participants: ${session.participantsCount}`, 15, currentY);
+      doc.setTextColor(100, 100, 100);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Total Participants: ${session.participantsCount} students`, margin, currentY);
       currentY += 15;
 
       // -- Questions Loop --
-      for (const [idx, q] of session.questions.entries()) {
-        if (currentY > 250) { doc.addPage(); currentY = 20; }
+      if (session.questions) {
+        for (const [idx, q] of session.questions.entries()) {
+          if (currentY > 250) { doc.addPage(); currentY = 20; }
 
-        doc.setFillColor(245, 245, 245);
-        doc.rect(10, currentY - 5, pageWidth - 20, 10, 'F');
-        doc.setTextColor(0, 74, 152);
-        doc.setFontSize(12);
-        doc.text(`Question ${idx + 1}: ${q.text}`, 15, currentY + 2);
-        currentY += 20;
+          doc.setFillColor(248, 250, 252);
+          doc.rect(margin - 2, currentY - 5, contentWidth + 4, 12, 'F');
+          doc.setTextColor(0, 74, 152);
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'bold');
+          doc.text(`QUESTION ${idx + 1}: ${q.type.replace('_', ' ')}`, margin, currentY + 2);
+          currentY += 15;
 
-        // Create a temporary chart container for canvas capture
-        const chartDiv = document.createElement('div');
-        chartDiv.style.position = 'absolute';
-        chartDiv.style.left = '-9999px';
-        chartDiv.style.width = '600px';
-        chartDiv.style.background = 'white';
-        chartDiv.style.padding = '20px';
-        document.body.appendChild(chartDiv);
+          doc.setTextColor(30, 41, 59);
+          doc.setFontSize(11);
+          const qTextLines = doc.splitTextToSize(q.text, contentWidth);
+          doc.text(qTextLines, margin, currentY);
+          currentY += (qTextLines.length * 6) + 10;
 
-        const qResponses = (session.allResponses && session.allResponses[idx]) || {};
+          const qRes = (session.allResponses && session.allResponses[idx]) || {};
 
-        // Render simple bars for PDF items
-        const barArea = document.createElement('div');
-        barArea.style.fontFamily = 'Helvetica, Arial, sans-serif';
-        q.options.forEach((opt, optIdx) => {
-          const count = qResponses[optIdx] || 0;
-          const total = Object.values(qResponses).reduce((a: any, b: any) => typeof b === 'number' ? a + b : a, 0) as number;
-          const pct = total > 0 ? (count / total) * 100 : 0;
+          if (q.type === 'SHORT_ANSWER' || q.type === 'ESSAY') {
+            const texts = qRes.text || [];
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${texts.length} manual responses:`, margin, currentY);
+            currentY += 7;
+            doc.setTextColor(51, 65, 85);
+            for (const t of texts.slice(0, 8)) {
+              if (currentY > 270) { doc.addPage(); currentY = 20; }
+              const tLines = doc.splitTextToSize(`• ${t}`, contentWidth - 10);
+              doc.text(tLines, margin + 5, currentY);
+              currentY += (tLines.length * 5) + 3;
+            }
+          } else {
+            (q.options || []).forEach((opt, oIdx) => {
+              if (currentY > 270) { doc.addPage(); currentY = 20; }
 
-          const row = document.createElement('div');
-          row.style.marginBottom = '10px';
-          row.innerHTML = `
-            <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">${opt} (${count})</div>
-            <div style="width: 400px; height: 12px; background: #eee; border-radius: 6px; overflow: hidden;">
-              <div style="width: ${pct}%; height: 100%; background: #004A98;"></div>
-            </div>
-          `;
-          barArea.appendChild(row);
-        });
-        chartDiv.appendChild(barArea);
+              let count = 0;
+              let pct = 0;
+              if (q.type === 'RANKING') {
+                const rankings = qRes.rankings || [];
+                const score = rankings.reduce((acc: number, r: number[]) => {
+                  const p = r.indexOf(oIdx);
+                  return p === -1 ? acc : acc + (q.options.length - p);
+                }, 0);
+                const max = rankings.length * q.options.length;
+                pct = max > 0 ? (score / max) * 100 : 0;
+                count = score;
+              } else {
+                count = qRes[oIdx] || 0;
+                const total = Object.values(qRes).reduce((a: any, b: any) => typeof b === 'number' ? a + b : a, 0) as number;
+                pct = total > 0 ? (count / total) * 100 : 0;
+              }
 
-        const canvas = await html2canvas(chartDiv);
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = 140;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        if (currentY + imgHeight > 270) { doc.addPage(); currentY = 20; }
-        doc.addImage(imgData, 'PNG', 15, currentY, imgWidth, imgHeight);
-        currentY += imgHeight + 15;
-
-        document.body.removeChild(chartDiv);
+              doc.setFontSize(9);
+              doc.setTextColor(71, 85, 105);
+              doc.text(`${opt} (${count})`, margin, currentY);
+              currentY += 2;
+              doc.setFillColor(241, 245, 249);
+              doc.rect(margin, currentY, contentWidth, 2, 'F');
+              if (pct > 0) {
+                doc.setFillColor(0, 74, 152);
+                doc.rect(margin, currentY, (contentWidth * pct) / 100, 2, 'F');
+              }
+              currentY += 8;
+            });
+          }
+          currentY += 10;
+        }
       }
 
-      doc.save(`UMAK_Report_${session.accessCode}.pdf`);
+      // Footer on last page
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text('CONFIDENTIAL - FOR ACADEMIC RECORD PURPOSES ONLY', pageWidth / 2, 285, { align: 'center' });
+
+      doc.save(`UMAK_Assessment_Report.pdf`);
+      secureLog("PDF saved successfully.");
     } catch (err) {
-      console.error("PDF Generation failed:", err);
-      alert("Failed to generate PDF. Please try again.");
+      secureLog("PDF Error:", err);
+      alert("PDF Error: The generation failed. Please check the console for details.");
     }
   };
 
@@ -229,7 +265,16 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                   </span>
                   {!isSessionEnded && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 leading-tight">{activeQ.text}</h2>
+                <h2 className="text-3xl font-black text-slate-900 leading-tight">
+                  {session.status === 'waiting' ? (
+                    <span className="text-slate-300 italic flex items-center gap-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 02-2 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Content Locked until Start
+                    </span>
+                  ) : activeQ.text}
+                </h2>
               </div>
               <div className="text-right">
                 <span className="text-sm font-bold text-slate-500 block">Access Code</span>
@@ -257,7 +302,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                     onClick={handleStartSession}
                     className="flex-1 bg-[#004A98] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-[#004A98]/20 hover:bg-[#003875] transition-all"
                   >
-                    Start Assessment Now
+                    Launch Assessment Now
                   </button>
                 ) : (
                   <>
@@ -300,7 +345,16 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
               <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">Active Live Metrics</div>
             </div>
             <div className="space-y-6">
-              {(activeQ.options || []).map((opt: string, i: number) => {
+              {session.status === 'waiting' ? (
+                <div className="py-12 border-2 border-dashed border-slate-100 rounded-2xl flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Options Hidden until Start</p>
+                </div>
+              ) : (activeQ.options || []).map((opt: string, i: number) => {
                 const qResponses = (session.allResponses && session.allResponses[currentIdx]) || {};
 
                 let count = 0;
@@ -357,7 +411,9 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 </div>
               </div>
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {session.allResponses && session.allResponses[currentIdx]?.text?.length > 0 ? (
+                {session.status === 'waiting' ? (
+                  <p className="text-slate-300 italic text-center text-sm font-bold">Waiting for activation...</p>
+                ) : session.allResponses && session.allResponses[currentIdx]?.text?.length > 0 ? (
                   session.allResponses[currentIdx].text.slice().reverse().map((txt: string, i: number) => (
                     <div key={i} className="bg-slate-50 border border-slate-100 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2">
                       <p className="text-slate-800 font-bold text-sm leading-relaxed">{txt}</p>
@@ -377,13 +433,26 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
         {/* Right Side: Visuals & Actions */}
         <div className="lg:w-[400px] space-y-8">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col items-center text-center">
-            <div className="p-6 bg-white rounded-2xl mb-4 border-2 border-slate-100 shadow-inner">
-              <Icons.QR />
+            <div className="p-6 bg-white rounded-2xl mb-4 border-2 border-slate-100 shadow-xl">
+              <QRCodeSVG
+                value={`${window.location.origin}/poll/${session.accessCode}`}
+                size={180}
+                level="H"
+                includeMargin={false}
+                imageSettings={{
+                  src: "https://www.umak.edu.ph/wp-content/uploads/2021/05/UMak-Logo-v2.png",
+                  x: undefined,
+                  y: undefined,
+                  height: 34,
+                  width: 34,
+                  excavate: true,
+                }}
+              />
             </div>
             <h3 className="font-black text-[#004A98] mb-1 text-lg uppercase tracking-tight">Access QR Code</h3>
             <p className="text-[10px] font-black text-slate-400 mb-6 uppercase tracking-[0.2em]">Scan to participate</p>
-            <div className="bg-slate-900 py-3 px-6 rounded-lg text-sm font-black text-[#FACC15] mb-8 w-full shadow-lg">
-              umak.edu.ph/poll/{session.accessCode}
+            <div className="bg-slate-900 py-3 px-6 rounded-lg text-[11px] font-black text-[#FACC15] mb-8 w-full shadow-lg truncate">
+              {window.location.host}/poll/{session.accessCode}
             </div>
           </div>
 
