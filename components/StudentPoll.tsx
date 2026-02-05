@@ -130,52 +130,76 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
         );
       case QuestionType.RANKING: {
         const ranking = Array.isArray(selectedOption) ? selectedOption : [];
-        const handleRankClick = (idx: number) => {
-          if (ranking.includes(idx)) {
-            setSelectedOption(ranking.filter(r => r !== idx));
-          } else {
-            setSelectedOption([...ranking, idx]);
-          }
+        const unrankedIndices = (activeQ.options || []).map((_, i) => i).filter(i => !ranking.includes(i));
+
+        const handleAdd = (idx: number) => {
+          setSelectedOption([...ranking, idx]);
+        };
+
+        const handleRemove = (idx: number) => {
+          setSelectedOption(ranking.filter(r => r !== idx));
         };
 
         return (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center mb-4 px-2">
-              <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Tap items in your preferred order</p>
-              {ranking.length > 0 && (
-                <button
-                  onClick={() => setSelectedOption([])}
-                  className="text-[10px] text-red-500 uppercase font-black tracking-widest hover:underline"
-                >
-                  Clear All
-                </button>
-              )}
+          <div className="space-y-8">
+            {/* Stage 1: Current Ranking */}
+            {ranking.length > 0 && (
+              <div className="bg-[#004A98]/5 border-2 border-dashed border-[#004A98]/20 rounded-[32px] p-6 animate-in slide-in-from-top-4">
+                <div className="flex justify-between items-center mb-6 px-2">
+                  <h4 className="text-[10px] font-black text-[#004A98] uppercase tracking-widest">Your Priority Order</h4>
+                  <button onClick={() => setSelectedOption([])} className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline">Reset All</button>
+                </div>
+                <div className="space-y-3">
+                  {ranking.map((optIdx, rank) => (
+                    <div key={`ranked-${optIdx}`} className="bg-white border-2 border-[#004A98] p-4 rounded-2xl flex items-center gap-4 shadow-sm animate-in fade-in zoom-in-95">
+                      <div className="w-8 h-8 bg-[#004A98] text-white rounded-lg flex items-center justify-center font-black text-sm">
+                        {rank + 1}
+                      </div>
+                      <span className="flex-grow font-black text-slate-800 text-sm">{activeQ.options[optIdx]}</span>
+                      <button onClick={() => handleRemove(optIdx)} className="text-slate-300 hover:text-red-500 p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Stage 2: Available Choices */}
+            <div className="space-y-4">
+              <div className="px-2">
+                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest leading-relaxed">
+                  {ranking.length === 0 ? 'Start by selecting your top choice' : `Select item for Rank #${ranking.length + 1}`}
+                </p>
+              </div>
+              <div className="grid gap-3">
+                {unrankedIndices.map((idx) => (
+                  <button
+                    key={`available-${idx}`}
+                    onClick={() => handleAdd(idx)}
+                    className="w-full text-left p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-[#004A98]/40 hover:bg-slate-50 transition-all font-black flex items-center justify-between text-lg group shadow-sm"
+                  >
+                    <span className="text-slate-700 group-hover:text-[#004A98]">{activeQ.options[idx]}</span>
+                    <div className="w-8 h-8 rounded-full border-2 border-slate-100 flex items-center justify-center group-hover:bg-[#004A98]/10 group-hover:border-[#004A98]/20 transition-all">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-200 group-hover:text-[#004A98]" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            {activeQ.options.map((opt, i) => {
-              const rankPos = ranking.indexOf(i);
-              const isSelected = rankPos > -1;
-              return (
-                <button
-                  key={i}
-                  onClick={() => handleRankClick(i)}
-                  className={`w-full text-left p-5 rounded-2xl border-2 transition-all font-black flex items-center justify-between text-lg shadow-sm ${isSelected
-                    ? 'border-[#004A98] bg-[#004A98]/5 text-[#004A98]'
-                    : 'border-slate-200 hover:border-[#004A98]/40 text-slate-700 bg-white'
-                    }`}
-                >
-                  <span className={isSelected ? 'text-[#004A98]' : 'text-slate-800'}>{opt}</span>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black transition-all ${isSelected
-                    ? 'bg-[#004A98] text-white rotate-6'
-                    : 'bg-slate-100 text-slate-400'}`}>
-                    {isSelected ? rankPos + 1 : '-'}
-                  </div>
-                </button>
-              );
-            })}
+
             {ranking.length > 0 && ranking.length < activeQ.options.length && (
-              <p className="text-center text-[10px] text-slate-400 font-bold italic mt-4 animate-pulse">
-                Rank {activeQ.options.length - ranking.length} more item(s)...
-              </p>
+              <div className="pt-4 flex items-center justify-center gap-2">
+                <div className="flex gap-1">
+                  {[...Array(activeQ.options.length)].map((_, i) => (
+                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i < ranking.length ? 'bg-[#004A98] w-4' : 'bg-slate-200'}`}></div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         );

@@ -184,9 +184,31 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
 
           {(activeQ.type === QuestionType.MULTIPLE_CHOICE || activeQ.type === QuestionType.RANKING) && (
             <div className="space-y-4">
-              <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2 ml-1">
-                {activeQ.type === QuestionType.RANKING ? 'Items to Rank' : 'Response Options'}
-              </label>
+              <div className="flex justify-between items-end mb-2 ml-1">
+                <label className="block text-xs font-black text-slate-700 uppercase tracking-widest">
+                  {activeQ.type === QuestionType.RANKING ? 'Items to Rank' : 'Response Options'}
+                </label>
+                {activeQ.type === QuestionType.RANKING && (
+                  <div className="bg-blue-50 text-[#004A98] px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border border-blue-100 italic">
+                    Students will prioritize these items sequentially
+                  </div>
+                )}
+              </div>
+
+              {activeQ.type === QuestionType.RANKING && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    How Ranking Works
+                  </p>
+                  <p className="text-[11px] text-slate-600 font-bold leading-relaxed">
+                    Final results will use <span className="text-[#004A98]">Weighted Priority Scoring</span>. Items ranked 1st by students receive maximum weight, while lower-ranked items get progressively fewer points. The "Priority Score" tracks collegiate consensus.
+                  </p>
+                </div>
+              )}
+
               <div className="grid gap-4">
                 {activeQ.options.map((opt, i) => (
                   <div key={i} className="flex gap-4 animate-in fade-in slide-in-from-left-2">
