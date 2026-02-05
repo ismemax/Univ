@@ -50,4 +50,4 @@ export interface User {
   role: UserRole;
 }
 
-export type ViewState = 'HOME' | 'LOGIN' | 'FACULTY_DASHBOARD' | 'FACULTY_CREATE' | 'FACULTY_EDIT' | 'FACULTY_LIVE' | 'STUDENT_JOIN' | 'STUDENT_POLL';
+export type ViewState = 'HOME' | 'FACULTY_DASHBOARD' | 'FACULTY_CREATE' | 'FACULTY_EDIT' | 'FACULTY_LIVE' | 'STUDENT_JOIN' | 'STUDENT_POLL';

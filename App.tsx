@@ -4,7 +4,6 @@ import { ViewState, Session, Question, User, Assessment } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
-import Login from './components/Login';
 import FacultyDashboard from './components/FacultyDashboard';
 import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
@@ -86,10 +85,16 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, [view, studentSession?.id]);
 
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-    setView(user.role === 'FACULTY' ? 'FACULTY_DASHBOARD' : 'HOME');
+  const handleEnterFacultyMode = () => {
+    const facultyUser: User = {
+      id: 'faculty_admin',
+      email: 'admin@umak.edu.ph',
+      name: 'Faculty Administrator',
+      role: 'FACULTY'
+    };
+    setCurrentUser(facultyUser);
+    localStorage.setItem(USER_KEY, JSON.stringify(facultyUser));
+    setView('FACULTY_DASHBOARD');
   };
 
   const handleLogout = () => {
@@ -167,18 +172,17 @@ const App: React.FC = () => {
         throw new Error("Security Violation: Session fingerprint mismatch.");
       }
 
+      const { increment } = await import('./firebase');
       const updates: any = {};
-      updates['participantsCount'] = (session.participantsCount || 0) + 1;
+      updates['participantsCount'] = increment(1);
 
       if (typeof responseIndex === 'number') {
-        const currentCount = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx][responseIndex]) || 0;
-        updates[`allResponses/${qIdx}/${responseIndex}`] = currentCount + 1;
+        updates[`allResponses/${qIdx}/${responseIndex}`] = increment(1);
       } else if (Array.isArray(responseIndex)) {
         const currentRankings = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].rankings) || [];
         updates[`allResponses/${qIdx}/rankings`] = [...currentRankings, responseIndex];
       } else {
         const currentTexts = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].text) || [];
-        // Apply strict sanitization to all text responses
         const sanitizedResponse = sanitizeInput(responseIndex);
         updates[`allResponses/${qIdx}/text`] = [...currentTexts, sanitizedResponse];
       }
@@ -227,9 +231,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (view) {
       case 'HOME':
-        return <Home setView={setView} onJoin={handleJoinSession} />;
-      case 'LOGIN':
-        return <Login onLogin={handleLogin} onCancel={() => setView('HOME')} />;
+        return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
       case 'FACULTY_DASHBOARD':
         return currentUser?.role === 'FACULTY' ? (
           <FacultyDashboard
@@ -285,7 +287,7 @@ const App: React.FC = () => {
       <Header
         currentUser={currentUser}
         onHome={() => setView('HOME')}
-        onLogin={() => setView('LOGIN')}
+        onEnterFaculty={handleEnterFacultyMode}
         onDashboard={() => setView('FACULTY_DASHBOARD')}
         onLogout={handleLogout}
       />
