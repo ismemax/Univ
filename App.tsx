@@ -238,15 +238,27 @@ const App: React.FC = () => {
           onCancel={() => setView('FACULTY_DASHBOARD')}
         />;
       case 'FACULTY_LIVE':
-        return activeSession ? (
+        if (!activeSession) {
+          // If we have no active session state but are in the live view, wait/check instead of kicking to home
+          return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-[#004A98] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Synchronizing Academic Session...</p>
+              </div>
+            </div>
+          );
+        }
+        return (
           <LiveSession session={activeSession} onEnd={() => {
-            set(ref(db, 'active_session'), null); // Delete from Firebase
+            set(ref(db, 'active_session'), null);
             setActiveSession(null);
             setView('FACULTY_DASHBOARD');
           }} />
-        ) : <Home setView={setView} onJoin={handleJoinSession} />;
+        );
       case 'STUDENT_POLL':
-        return studentSession ? (
+        if (!studentSession) return <Home setView={setView} onJoin={handleJoinSession} />;
+        return (
           <StudentPoll
             key={studentSession.id}
             session={studentSession}
@@ -256,7 +268,7 @@ const App: React.FC = () => {
               setView('HOME');
             }}
           />
-        ) : <Home setView={setView} onJoin={handleJoinSession} />;
+        );
       default:
         return <Home setView={setView} onJoin={handleJoinSession} />;
     }
