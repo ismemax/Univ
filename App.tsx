@@ -38,6 +38,11 @@ const App: React.FC = () => {
     }
 
     // 2. Real-time Session Sync via Firebase
+    if (!db) {
+      secureLog("Firebase database not initialized. Sync skipped.");
+      return;
+    }
+
     const sessionRef = ref(db, 'active_session');
 
     const unsubscribe = onValue(sessionRef, (snapshot) => {
@@ -48,7 +53,13 @@ const App: React.FC = () => {
 
       // Restore view if we are faculty and have an active session
       if (session && session.status === 'active' && !studentSession) {
-        const user = savedUser ? JSON.parse(savedUser) : null;
+        let user = null;
+        try {
+          user = savedUser ? JSON.parse(savedUser) : null;
+        } catch (e) {
+          secureLog("Failed to parse saved user during sync", e);
+        }
+
         if (user && user.role === 'FACULTY' && view === 'HOME') {
           setView('FACULTY_LIVE');
         }

@@ -30,7 +30,9 @@ export const isSecureInput = (val: string, minLength = 1): boolean => {
  * Following "Disable debug logs in production" practice.
  */
 export const secureLog = (message: string, data?: any) => {
-    if (import.meta.env.DEV) {
+    // In a pure browser environment, we check for dev mode via location or flag
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isDev) {
         if (data) console.log(`[DEV_SEC] ${message}`, data);
         else console.log(`[DEV_SEC] ${message}`);
     }
