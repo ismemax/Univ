@@ -21,73 +21,72 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 md:py-24 flex flex-col items-center text-center">
+    <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center text-center">
       {/* Hero Section */}
       <div className="mb-16">
-        <div className="w-24 h-24 flex items-center justify-center mx-auto mb-8 animate-fade-in bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+        <div className="w-28 h-28 flex items-center justify-center mx-auto mb-8 animate-fade-in">
           <img
             src="/umak-logo.png"
             alt="UMak Logo"
             className="w-full h-full object-contain"
           />
         </div>
-        <h1 className="text-4xl md:text-6xl font-serif font-bold text-umak-navy mb-6 tracking-tight">Academic Discussion Board</h1>
-        <p className="text-slate-500 text-lg max-w-xl mx-auto leading-relaxed font-semibold">
-          Scan the QR or enter the access code provided by your instructor to join the live session.
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-umak-navy mb-6 tracking-tight">Academic Discussion Board</h1>
+        <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed font-medium">
+          An official platform designed for the UMak community to facilitate modern academic discussions and real-time interactive lessons.
         </p>
       </div>
 
-      {/* Main Action Area */}
-      <div className="w-full max-w-lg bg-white border-2 border-slate-100 rounded-[40px] p-10 shadow-2xl relative">
-        <div className="absolute top-0 right-0 p-4">
-          <div className="flex gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active System</span>
+      {/* Portal Cards */}
+      <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
+        {/* Faculty Mode */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center border-b-4 border-b-umak-blue">
+          <div className="bg-slate-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 border border-slate-100">
+            <Icons.Book />
           </div>
+          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Faculty Dashboard</h2>
+          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold text-pretty">
+            Create academic discussion points, launch live interactive sessions, and download comprehensive class participation reports.
+          </p>
+          <button
+            onClick={onEnterFaculty}
+            className="w-full bg-umak-blue text-white font-black py-4 rounded-xl hover:bg-umak-navy transition-all uppercase text-sm tracking-widest mt-auto shadow-lg shadow-umak-blue/20 active:scale-95"
+          >
+            Enter Teacher Mode
+          </button>
         </div>
 
-        <div className="flex flex-col items-center">
-          <div className="bg-umak-yellow/10 w-16 h-16 rounded-3xl flex items-center justify-center mb-8">
+        {/* Student Mode */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center border-b-4 border-b-umak-yellow">
+          <div className="bg-slate-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 border border-slate-100">
             <Icons.IDBadge />
           </div>
+          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Student Access</h2>
+          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold text-pretty">
+            Participate in live classroom polls and discussions. Simply enter the proctor code provided by your instructor to begin.
+          </p>
 
-          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-8 uppercase tracking-widest">Join Session</h2>
-
-          <div className="w-full space-y-6">
-            <div className="relative">
-              <input
-                type="text"
-                maxLength={4}
-                placeholder="PROCTOR CODE"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                onKeyDown={(e) => e.key === 'Enter' && handleJoinClick()}
-                className="w-full bg-slate-50 border-2 border-slate-100 py-6 px-4 rounded-[32px] text-center font-black text-4xl text-umak-blue focus:outline-none focus:ring-8 focus:ring-umak-blue/5 focus:border-umak-blue transition-all placeholder:font-black placeholder:text-slate-200 tracking-[0.4em]"
-              />
-            </div>
-
+          <div className="w-full mt-auto space-y-4">
+            <input
+              type="text"
+              maxLength={4}
+              placeholder="ENTER 4-DIGIT CODE"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+              onKeyDown={(e) => e.key === 'Enter' && handleJoinClick()}
+              className="w-full bg-white border-2 border-slate-300 py-4 px-4 rounded-xl text-center font-black text-2xl text-umak-blue focus:outline-none focus:ring-4 focus:ring-umak-blue/5 focus:border-umak-blue transition-all placeholder:font-bold placeholder:text-slate-300 tracking-[0.5em]"
+            />
             <button
               onClick={handleJoinClick}
-              className="w-full bg-umak-blue text-white font-black py-6 rounded-[32px] hover:bg-umak-navy transition-all uppercase text-sm tracking-[0.2em] shadow-xl shadow-umak-blue/30 active:scale-95"
+              className="w-full border-2 border-umak-blue text-umak-blue font-black py-4 rounded-xl hover:bg-umak-blue hover:text-white transition-all uppercase text-sm tracking-widest active:scale-95"
             >
-              Enter Discussion
+              Join Discussion
             </button>
           </div>
         </div>
       </div>
 
-      {/* Subtle Faculty Link */}
-      <div className="mt-12 flex flex-col items-center gap-6">
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Institutional Technology Division</p>
-        <button
-          onClick={onEnterFaculty}
-          className="text-slate-300 hover:text-umak-blue text-[10px] font-black uppercase tracking-widest transition-colors py-2 px-4 border border-transparent hover:border-slate-100 rounded-full"
-        >
-          Teacher / Administrator Access
-        </button>
-      </div>
-
-      <div className="mt-16 w-16 h-1.5 bg-umak-yellow rounded-full opacity-30"></div>
+      <div className="mt-20 w-24 h-1.5 bg-umak-yellow rounded-full opacity-60"></div>
     </div>
   );
 };
