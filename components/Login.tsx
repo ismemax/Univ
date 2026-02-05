@@ -39,7 +39,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4 relative z-10">
             <img
-              src="https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/University_of_Makati_Logo.png/600px-University_of_Makati_Logo.png"
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/UMak_Logo_Registered.png/600px-UMak_Logo_Registered.png"
               alt="UMak Logo"
               className="w-full h-full object-contain brightness-0 invert"
             />

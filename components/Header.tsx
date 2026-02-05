@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onLogin, onDashboa
       <div className="flex items-center gap-4 cursor-pointer" onClick={onHome}>
         <div className="relative w-12 h-12 flex items-center justify-center">
           <img
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/University_of_Makati_Logo.png/600px-University_of_Makati_Logo.png"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/UMak_Logo_Registered.png/600px-UMak_Logo_Registered.png"
             alt="UMak Logo"
             className="w-full h-full object-contain"
           />
