@@ -146,6 +146,9 @@ const App: React.FC = () => {
       if (typeof responseIndex === 'number') {
         const currentCount = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx][responseIndex]) || 0;
         updates[`allResponses/${qIdx}/${responseIndex}`] = currentCount + 1;
+      } else if (Array.isArray(responseIndex)) {
+        const currentRankings = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].rankings) || [];
+        updates[`allResponses/${qIdx}/rankings`] = [...currentRankings, responseIndex];
       } else {
         const currentTexts = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].text) || [];
         updates[`allResponses/${qIdx}/text`] = [...currentTexts, responseIndex];

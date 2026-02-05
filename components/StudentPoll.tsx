@@ -128,23 +128,58 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
             onChange={(e) => setSelectedOption(e.target.value)}
           />
         );
-      case QuestionType.RANKING:
+      case QuestionType.RANKING: {
+        const ranking = Array.isArray(selectedOption) ? selectedOption : [];
+        const handleRankClick = (idx: number) => {
+          if (ranking.includes(idx)) {
+            setSelectedOption(ranking.filter(r => r !== idx));
+          } else {
+            setSelectedOption([...ranking, idx]);
+          }
+        };
+
         return (
           <div className="space-y-4">
-            <p className="text-xs text-slate-500 uppercase font-black mb-4 tracking-widest bg-slate-50 p-4 rounded-xl text-center border border-slate-100">Touch items to set priority order</p>
-            {activeQ.options.map((opt, i) => (
-              <button
-                key={i}
-                className="w-full text-left p-5 rounded-2xl border-2 border-slate-200 bg-white shadow-sm flex items-center justify-between transition-transform active:scale-95"
-              >
-                <span className="text-slate-800 font-black text-lg">{opt}</span>
-                <span className="w-10 h-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-sm font-black text-slate-400">
-                  -
-                </span>
-              </button>
-            ))}
+            <div className="flex justify-between items-center mb-4 px-2">
+              <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Tap items in your preferred order</p>
+              {ranking.length > 0 && (
+                <button
+                  onClick={() => setSelectedOption([])}
+                  className="text-[10px] text-red-500 uppercase font-black tracking-widest hover:underline"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+            {activeQ.options.map((opt, i) => {
+              const rankPos = ranking.indexOf(i);
+              const isSelected = rankPos > -1;
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleRankClick(i)}
+                  className={`w-full text-left p-5 rounded-2xl border-2 transition-all font-black flex items-center justify-between text-lg shadow-sm ${isSelected
+                    ? 'border-[#004A98] bg-[#004A98]/5 text-[#004A98]'
+                    : 'border-slate-200 hover:border-[#004A98]/40 text-slate-700 bg-white'
+                    }`}
+                >
+                  <span className={isSelected ? 'text-[#004A98]' : 'text-slate-800'}>{opt}</span>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black transition-all ${isSelected
+                    ? 'bg-[#004A98] text-white rotate-6'
+                    : 'bg-slate-100 text-slate-400'}`}>
+                    {isSelected ? rankPos + 1 : '-'}
+                  </div>
+                </button>
+              );
+            })}
+            {ranking.length > 0 && ranking.length < activeQ.options.length && (
+              <p className="text-center text-[10px] text-slate-400 font-bold italic mt-4 animate-pulse">
+                Rank {activeQ.options.length - ranking.length} more item(s)...
+              </p>
+            )}
           </div>
         );
+      }
       default:
         return null;
     }

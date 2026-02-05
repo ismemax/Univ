@@ -183,21 +183,40 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             </div>
             <div className="space-y-6">
               {(activeQ.options || []).map((opt: string, i: number) => {
-                const responses = (session.allResponses && session.allResponses[currentIdx]) || {};
-                const count = responses[i] || 0;
-                // Calculate percentage relative to total responses for THIS question? 
-                // Or just participantsCount (which is total people joined).
-                const totalResponses = Object.values(responses).reduce((a: any, b: any) => {
-                  if (typeof b === 'number') return a + b;
-                  return a + (Array.isArray(b) ? b.length : 0);
-                }, 0) as number;
+                const qResponses = (session.allResponses && session.allResponses[currentIdx]) || {};
 
-                const pct = totalResponses > 0 ? (count / totalResponses * 100).toFixed(0) : 0;
+                let count = 0;
+                let pct = 0;
+                let label = "Responded";
+
+                if (activeQ.type === 'RANKING') {
+                  const rankings = qResponses.rankings || [];
+                  // Calculate weighted score: sum of (Total Options - Rank Position)
+                  const totalRanks = rankings.length;
+                  const scoreSum = rankings.reduce((acc: number, r: number[]) => {
+                    const pos = r.indexOf(i);
+                    if (pos === -1) return acc;
+                    return acc + (activeQ.options.length - pos);
+                  }, 0);
+
+                  const maxPossibleScore = totalRanks * activeQ.options.length;
+                  pct = maxPossibleScore > 0 ? Math.round((scoreSum / maxPossibleScore) * 100) : 0;
+                  label = "Priority Score";
+                  count = scoreSum;
+                } else {
+                  count = qResponses[i] || 0;
+                  const total = Object.values(qResponses).reduce((a: any, b: any) => {
+                    if (typeof b === 'number') return a + b;
+                    return a + (Array.isArray(b) ? b.length : 0);
+                  }, 0) as number;
+                  pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                }
+
                 return (
                   <div key={i}>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="font-black text-slate-800">{opt}</span>
-                      <span className="font-black text-[#004A98]">{count} Responded ({pct}%)</span>
+                      <span className="font-black text-[#004A98]">{count} {label} ({pct}%)</span>
                     </div>
                     <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
                       <div
