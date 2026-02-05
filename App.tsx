@@ -181,10 +181,11 @@ const App: React.FC = () => {
       }
 
       const updates: any = {};
-      updates['participantsCount'] = increment(1);
+      updates['participantsCount'] = (session.participantsCount || 0) + 1;
 
       if (typeof responseIndex === 'number') {
-        updates[`allResponses/${qIdx}/${responseIndex}`] = increment(1);
+        const currentCount = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx][responseIndex]) || 0;
+        updates[`allResponses/${qIdx}/${responseIndex}`] = currentCount + 1;
       } else if (Array.isArray(responseIndex)) {
         const currentRankings = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].rankings) || [];
         updates[`allResponses/${qIdx}/rankings`] = [...currentRankings, responseIndex];

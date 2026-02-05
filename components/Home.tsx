@@ -6,10 +6,8 @@ import { Icons } from '../constants';
 interface HomeProps {
   setView: (v: ViewState) => void;
   onJoin: (code: string) => void;
-  onEnterFaculty: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
 const Home: React.FC<HomeProps> = ({ setView, onJoin }) => {
   const [code, setCode] = useState('');
 
