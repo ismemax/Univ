@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ViewState, Session, Question, User, Assessment } from './types';
 import Header from './components/Header';
@@ -6,7 +5,6 @@ import Footer from './components/Footer';
 import Home from './components/Home';
 import Login from './components/Login';
 import FacultyDashboard from './components/FacultyDashboard';
-import Login from './components/Login';
 import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
 import StudentPoll from './components/StudentPoll';
@@ -88,7 +86,6 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, [view, studentSession?.id]);
 
-<<<<<<< HEAD
   const handleEnterFacultyMode = () => {
     setView('LOGIN');
   };
@@ -97,12 +94,6 @@ const App: React.FC = () => {
     setCurrentUser(user);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     setView('FACULTY_DASHBOARD');
-=======
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-    setView(user.role === 'FACULTY' ? 'FACULTY_DASHBOARD' : 'HOME');
->>>>>>> parent of 7ec1945 (hjj)
   };
 
   const handleLogout = () => {
@@ -238,7 +229,6 @@ const App: React.FC = () => {
   };
 
   const renderView = () => {
-<<<<<<< HEAD
     try {
       switch (view) {
         case 'HOME':
@@ -262,42 +252,6 @@ const App: React.FC = () => {
             <div className="min-h-[50vh] flex flex-col items-center justify-center">
               <div className="w-10 h-10 border-4 border-umak-blue border-t-transparent rounded-full animate-spin mb-4"></div>
               <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Authorizing Faculty Access...</p>
-=======
-    switch (view) {
-      case 'HOME':
-        return <Home setView={setView} onJoin={handleJoinSession} />;
-      case 'LOGIN':
-        return <Login onLogin={handleLogin} onCancel={() => setView('HOME')} />;
-      case 'FACULTY_DASHBOARD':
-        return currentUser?.role === 'FACULTY' ? (
-          <FacultyDashboard
-            user={currentUser}
-            onCreateNew={() => { setEditingAssessment(null); setView('FACULTY_CREATE'); }}
-            onStartSession={handleCreateSession}
-            onEditDraft={(q: any) => { setEditingAssessment(q); setView('FACULTY_EDIT'); }}
-          />
-        ) : <Home setView={setView} onJoin={handleJoinSession} />;
-      case 'FACULTY_CREATE':
-      case 'FACULTY_EDIT':
-        return <QuestionnaireCreator
-          initialData={editingAssessment || undefined}
-          onCreate={handleCreateSession}
-          onSaveDraft={handleSaveDraft}
-          onCancel={() => setView('FACULTY_DASHBOARD')}
-        />;
-      case 'FACULTY_LIVE':
-        return activeSession ? (
-          <LiveSession session={activeSession} onEnd={() => {
-            set(ref(db, 'active_session'), null);
-            setActiveSession(null);
-            setView('FACULTY_DASHBOARD');
-          }} />
-        ) : (
-          <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-[#004A98] border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Re-establishing Session...</p>
->>>>>>> parent of 7ec1945 (hjj)
             </div>
           );
         case 'FACULTY_CREATE':
@@ -357,7 +311,6 @@ const App: React.FC = () => {
   };
 
   return (
-<<<<<<< HEAD
     <ErrorBoundary>
       <div className="flex flex-col min-h-screen">
         <Header
@@ -373,21 +326,6 @@ const App: React.FC = () => {
         <Footer />
       </div>
     </ErrorBoundary>
-=======
-    <div className="flex flex-col min-h-screen">
-      <Header
-        currentUser={currentUser}
-        onHome={() => setView('HOME')}
-        onLogin={() => setView('LOGIN')}
-        onDashboard={() => setView('FACULTY_DASHBOARD')}
-        onLogout={handleLogout}
-      />
-      <main className="flex-grow">
-        {renderView()}
-      </main>
-      <Footer />
-    </div>
->>>>>>> parent of 7ec1945 (hjj)
   );
 };
 
