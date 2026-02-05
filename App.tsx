@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
 import FacultyDashboard from './components/FacultyDashboard';
+import Login from './components/Login';
 import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
 import StudentPoll from './components/StudentPoll';
@@ -87,14 +88,12 @@ const App: React.FC = () => {
   }, [view, studentSession?.id]);
 
   const handleEnterFacultyMode = () => {
-    const facultyUser: User = {
-      id: 'faculty_admin',
-      email: 'admin@umak.edu.ph',
-      name: 'Faculty Administrator',
-      role: 'FACULTY'
-    };
-    setCurrentUser(facultyUser);
-    localStorage.setItem(USER_KEY, JSON.stringify(facultyUser));
+    setView('LOGIN');
+  };
+
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
     setView('FACULTY_DASHBOARD');
   };
 
@@ -234,6 +233,8 @@ const App: React.FC = () => {
       switch (view) {
         case 'HOME':
           return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
+        case 'LOGIN':
+          return <Login onLogin={handleLogin} onCancel={() => setView('HOME')} />;
         case 'FACULTY_DASHBOARD':
           if (currentUser && currentUser.role === 'FACULTY') {
             return (

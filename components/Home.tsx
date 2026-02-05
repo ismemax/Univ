@@ -52,7 +52,7 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
             onClick={onEnterFaculty}
             className="w-full bg-umak-blue text-white font-black py-4 rounded-xl hover:bg-umak-navy transition-all uppercase text-sm tracking-widest mt-auto shadow-lg shadow-umak-blue/20 active:scale-95"
           >
-            Enter Teacher Mode
+            Faculty Portal Login
           </button>
         </div>
 

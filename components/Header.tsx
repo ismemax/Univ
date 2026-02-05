@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onEnterFaculty, on
             onClick={onEnterFaculty}
             className="text-umak-blue hover:text-umak-navy font-bold text-xs uppercase tracking-widest border border-umak-blue/20 px-4 py-2 rounded-lg transition-all"
           >
-            Enter Faculty Mode
+            Portal Login
           </button>
         )}
       </div>
