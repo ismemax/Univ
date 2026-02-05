@@ -2,7 +2,10 @@
     "rules": {
         "active_session": {
             ".read": true,
-            ".write": "!data.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'waiting'",
+            // Rule: Allow write if creating a new session (!data.exists), 
+            // or if clearing an old one (newData == null), 
+            // or if the current session is in a modifiable state (active/waiting/ended).
+            ".write": "!data.exists() || !newData.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'waiting' || data.child('status').val() === 'ended'",
             "participantsCount": {
                 ".validate": "newData.isNumber() && newData.val() >= 0"
             },
@@ -21,9 +24,3 @@
         }
     }
 }
-/* 
-IMPORTANT: 
-Your previous security rules were blocking the creation of the session.
-Please COPY AND PASTE these updated rules into your Firebase Console.
-This will fix the "Loading" hang.
-*/

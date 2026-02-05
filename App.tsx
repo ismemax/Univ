@@ -116,24 +116,33 @@ const App: React.FC = () => {
     setView('FACULTY_DASHBOARD');
   };
 
-  const handleCreateSession = (assessment: Assessment) => {
-    saveToDatabase({ ...assessment, isDraft: false });
+  const handleCreateSession = async (assessment: Assessment) => {
+    try {
+      saveToDatabase({ ...assessment, isDraft: false });
 
-    const newSession: Session = {
-      id: Math.random().toString(36).substring(7),
-      accessCode: Math.floor(1000 + Math.random() * 9000).toString(),
-      questions: assessment.questions,
-      currentQuestionIndex: 0,
-      status: assessment.hasLobby ? 'waiting' : 'active',
-      participantsCount: 0,
-      allResponses: {},
-      startTime: Date.now(),
-      isStarted: !assessment.hasLobby,
-    };
+      const newSession: Session = {
+        id: Math.random().toString(36).substring(7),
+        accessCode: Math.floor(1000 + Math.random() * 9000).toString(),
+        questions: assessment.questions,
+        currentQuestionIndex: 0,
+        status: assessment.hasLobby ? 'waiting' : 'active',
+        participantsCount: 0,
+        allResponses: {},
+        startTime: Date.now(),
+        isStarted: !assessment.hasLobby,
+      };
 
-    set(ref(db, 'active_session'), newSession);
-    setActiveSession(newSession);
-    setView('FACULTY_LIVE');
+      // Ensure we clear any old active session reference first
+      await set(ref(db, 'active_session'), null);
+
+      // Push the new session
+      await set(ref(db, 'active_session'), newSession);
+
+      setActiveSession(newSession);
+      setView('FACULTY_LIVE');
+    } catch (e) {
+      handleGenericError(e, "Could not launch session. Please check your network connection or Firebase rules.");
+    }
   };
 
   const handleEditDraft = (assessment: Assessment) => {
