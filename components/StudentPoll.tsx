@@ -15,6 +15,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   const [timeLeft, setTimeLeft] = useState(session.question.timeLimit);
 
   useEffect(() => {
+    if (!session || !session.question) return;
+
     // Check if this device has already submitted for this specific session ID
     const submissionKey = `umak_submitted_${session.id}`;
     if (session.question.preventMultipleResponses && localStorage.getItem(submissionKey)) {
@@ -113,6 +115,14 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
         return null;
     }
   };
+
+  if (!session || !session.question) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse font-black text-[#004A98] uppercase tracking-widest text-xs">Authenticating Session...</div>
+      </div>
+    );
+  }
 
   if (session.status === 'waiting') {
     return (

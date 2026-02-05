@@ -89,6 +89,17 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     downloadAnchorNode.remove();
   };
 
+  if (!session || !session.question) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-slate-200 rounded-full mb-4"></div>
+          <div className="h-4 w-32 bg-slate-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 relative">
       {/* Toast Notifications */}
@@ -174,7 +185,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
               <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">Updates automatically</div>
             </div>
             <div className="space-y-6">
-              {session.question.options.map((opt, i) => {
+              {(session.question.options || []).map((opt: string, i: number) => {
                 const responses = session.responses || {};
                 const count = responses[i] || 0;
                 const pct = session.participantsCount > 0 ? (count / session.participantsCount * 100).toFixed(0) : 0;
