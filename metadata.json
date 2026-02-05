@@ -1,0 +1,7 @@
+{
+  "name": "UnivPlatform",
+  "description": "A professional academic platform for the University of Makati community to facilitate modern assessments, research surveys, and real-time classroom polls.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

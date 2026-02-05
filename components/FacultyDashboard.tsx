@@ -1,0 +1,112 @@
+
+import React, { useState, useEffect } from 'react';
+import { User, Question, QuestionType } from '../types';
+
+interface FacultyDashboardProps {
+  user: User;
+  onCreateNew: () => void;
+  onStartSession: (q: Question) => void;
+  onEditDraft: (q: Question) => void;
+}
+
+const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, onStartSession, onEditDraft }) => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  useEffect(() => {
+    const db = JSON.parse(localStorage.getItem('umak_db_questions') || '[]');
+    setQuestions([...db].reverse());
+  }, []);
+
+  const deleteQuestion = (id: string) => {
+    const updated = questions.filter(q => q.id !== id);
+    localStorage.setItem('umak_db_questions', JSON.stringify(updated));
+    setQuestions(updated);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div>
+          <h1 className="text-3xl font-black text-[#004A98]">Faculty Dashboard</h1>
+          <p className="text-slate-600 font-semibold">Academic Assessment Management</p>
+        </div>
+        <button 
+          onClick={onCreateNew}
+          className="bg-[#004A98] text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-[#004A98]/20 hover:bg-[#003875] transition-all flex items-center gap-2 w-fit"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
+          New Assessment
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {questions.length === 0 ? (
+          <div className="col-span-full py-24 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <h3 className="text-slate-500 font-black uppercase tracking-widest text-sm">No assessments found</h3>
+            <p className="text-slate-500 text-xs mt-1 font-medium">Ready to create your first academic questionnaire?</p>
+          </div>
+        ) : (
+          questions.map((q) => (
+            <div key={q.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex gap-2">
+                  <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                    q.type === QuestionType.MULTIPLE_CHOICE ? 'bg-blue-50 text-blue-700' :
+                    q.type === QuestionType.TRUE_FALSE ? 'bg-green-50 text-green-700' : 
+                    q.type === QuestionType.RATING_SCALE ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-700'
+                  }`}>
+                    {q.type.replace('_', ' ')}
+                  </span>
+                  {q.isDraft && (
+                    <span className="bg-[#FACC15] text-[#004A98] px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">
+                      Draft
+                    </span>
+                  )}
+                </div>
+                <span className="text-[9px] font-black text-slate-400">{new Date(q.createdAt).toLocaleDateString()}</span>
+              </div>
+              
+              <h4 className="text-lg font-black text-slate-900 mb-6 line-clamp-2 min-h-[3.5rem] leading-tight">{q.text}</h4>
+              
+              <div className="flex items-center gap-3 mt-auto">
+                {q.isDraft ? (
+                  <button 
+                    onClick={() => onEditDraft(q)}
+                    className="flex-1 bg-white border border-[#004A98] text-[#004A98] hover:bg-[#004A98] hover:text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider"
+                  >
+                    Edit Draft
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => onStartSession(q)}
+                    className="flex-1 bg-[#004A98] text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider shadow-sm hover:shadow-md"
+                  >
+                    Launch Live
+                  </button>
+                )}
+                <button 
+                  onClick={() => deleteQuestion(q.id)}
+                  className="p-2.5 text-slate-400 hover:text-red-500 transition-colors"
+                  title="Delete"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default FacultyDashboard;
