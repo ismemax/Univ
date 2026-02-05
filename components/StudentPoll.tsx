@@ -4,10 +4,11 @@ import { Session, QuestionType } from '../types';
 
 interface StudentPollProps {
   session: Session;
+  onSubmit: (response: any) => void;
   onFinished: () => void;
 }
 
-const StudentPoll: React.FC<StudentPollProps> = ({ session, onFinished }) => {
+const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished }) => {
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(session.question.timeLimit);
@@ -29,6 +30,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onFinished }) => {
     if (selectedOption === null || (typeof selectedOption === 'string' && !selectedOption.trim())) {
       return alert('Please provide a response.');
     }
+    onSubmit(selectedOption);
     setHasSubmitted(true);
   };
 
@@ -44,11 +46,10 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onFinished }) => {
               <button
                 key={i}
                 onClick={() => setSelectedOption(i)}
-                className={`w-full text-left p-5 rounded-2xl border-2 transition-all font-black flex items-center justify-between text-lg shadow-sm ${
-                  selectedOption === i 
-                    ? 'border-[#004A98] bg-[#004A98]/10 text-[#004A98]' 
+                className={`w-full text-left p-5 rounded-2xl border-2 transition-all font-black flex items-center justify-between text-lg shadow-sm ${selectedOption === i
+                    ? 'border-[#004A98] bg-[#004A98]/10 text-[#004A98]'
                     : 'border-slate-200 hover:border-[#004A98]/40 text-slate-700 bg-white'
-                }`}
+                  }`}
               >
                 <span>{opt}</span>
                 {selectedOption === i && (
@@ -62,8 +63,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onFinished }) => {
         );
       case QuestionType.SHORT_ANSWER:
         return (
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Type your response here..."
             className="w-full bg-white border-2 border-slate-200 rounded-2xl p-5 text-xl font-black text-slate-900 focus:outline-none focus:border-[#004A98] focus:ring-4 focus:ring-[#004A98]/5 transition-all placeholder:text-slate-300"
             onChange={(e) => setSelectedOption(e.target.value)}
@@ -71,7 +72,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onFinished }) => {
         );
       case QuestionType.ESSAY:
         return (
-          <textarea 
+          <textarea
             placeholder="Type your comprehensive response here..."
             className="w-full bg-white border-2 border-slate-200 rounded-2xl p-6 h-60 text-xl font-black text-slate-900 focus:outline-none focus:border-[#004A98] focus:ring-4 focus:ring-[#004A98]/5 transition-all placeholder:text-slate-300"
             onChange={(e) => setSelectedOption(e.target.value)}
@@ -80,8 +81,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onFinished }) => {
       case QuestionType.RANKING:
         return (
           <div className="space-y-4">
-             <p className="text-xs text-slate-500 uppercase font-black mb-4 tracking-widest bg-slate-50 p-4 rounded-xl text-center border border-slate-100">Touch items to set priority order</p>
-             {q.options.map((opt, i) => (
+            <p className="text-xs text-slate-500 uppercase font-black mb-4 tracking-widest bg-slate-50 p-4 rounded-xl text-center border border-slate-100">Touch items to set priority order</p>
+            {q.options.map((opt, i) => (
               <button
                 key={i}
                 className="w-full text-left p-5 rounded-2xl border-2 border-slate-200 bg-white shadow-sm flex items-center justify-between transition-transform active:scale-95"
@@ -120,7 +121,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onFinished }) => {
     <div className="max-w-xl mx-auto px-6 py-12">
       <div className="bg-white border-2 border-slate-200 rounded-[40px] shadow-2xl p-10 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-2 bg-slate-100">
-           <div className="bg-[#FACC15] h-full transition-all duration-1000 ease-linear shadow-sm" style={{ width: `${(timeLeft / session.question.timeLimit) * 100}%` }}></div>
+          <div className="bg-[#FACC15] h-full transition-all duration-1000 ease-linear shadow-sm" style={{ width: `${(timeLeft / session.question.timeLimit) * 100}%` }}></div>
         </div>
 
         <div className="flex justify-between items-center mb-12 mt-4">

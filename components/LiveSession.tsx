@@ -49,38 +49,6 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     return () => clearInterval(timer);
   }, [timeLeft, session.status, isPaused]);
 
-  // Simulation Effect: Generate random responses periodically
-  // We use a stable dependency array to ensure the responder is not cleared every second by the timer
-  useEffect(() => {
-    if (session.status === 'ended' || isPaused) return;
-
-    const responder = setInterval(() => {
-      if (Math.random() > 0.4) {
-        setSession(prev => {
-          const next = { ...prev };
-          next.participantsCount += 1;
-          const optionsCount = session.question.options?.length || 1;
-          const randIdx = Math.floor(Math.random() * optionsCount);
-          next.responses[randIdx] = (next.responses[randIdx] || 0) + 1;
-
-          // Add notification for faculty
-          const newNotif: Notification = {
-            id: Math.random().toString(36).substring(7),
-            message: `Student submitted response #${next.participantsCount}`,
-            timestamp: Date.now()
-          };
-
-          setNotifications(curr => [newNotif, ...curr].slice(0, 5));
-
-          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(next));
-          return next;
-        });
-      }
-    }, 2500);
-
-    return () => clearInterval(responder);
-  }, [session.status, isPaused, session.question.options.length]);
-
   // Automatically clear old notifications after 4 seconds
   useEffect(() => {
     if (notifications.length === 0) return;
