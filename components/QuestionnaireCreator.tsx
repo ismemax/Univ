@@ -14,6 +14,8 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
   const [text, setText] = useState(initialData?.text || '');
   const [options, setOptions] = useState<string[]>(initialData?.options || ['', '']);
   const [timeLimit, setTimeLimit] = useState(initialData?.timeLimit || 60);
+  const [preventMultiple, setPreventMultiple] = useState(initialData?.preventMultipleResponses || true);
+  const [hasLobby, setHasLobby] = useState(initialData?.hasLobby || false);
 
   const handleAddOption = () => setOptions([...options, '']);
   const handleRemoveOption = (index: number) => setOptions(options.filter((_, i) => i !== index));
@@ -27,12 +29,14 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
     id: initialData?.id || Math.random().toString(36).substring(7),
     text,
     type,
-    options: type === QuestionType.TRUE_FALSE ? ['True', 'False'] : 
-             type === QuestionType.RATING_SCALE ? ['1', '2', '3', '4', '5'] : 
-             (type === QuestionType.SHORT_ANSWER || type === QuestionType.ESSAY) ? [] : options,
+    options: type === QuestionType.TRUE_FALSE ? ['True', 'False'] :
+      type === QuestionType.RATING_SCALE ? ['1', '2', '3', '4', '5'] :
+        (type === QuestionType.SHORT_ANSWER || type === QuestionType.ESSAY) ? [] : options,
     timeLimit,
     createdAt: initialData?.createdAt || Date.now(),
-    isDraft
+    isDraft,
+    preventMultipleResponses: preventMultiple,
+    hasLobby
   });
 
   const validate = () => {
@@ -57,11 +61,11 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
             {initialData ? 'Edit Assessment' : 'New Assessment'}
           </h2>
         </div>
-        
+
         <div className="space-y-10">
           <div>
             <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-3 ml-1">Academic Prompt / Question</label>
-            <textarea 
+            <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="e.g., Define the role of University of Makati in community development."
@@ -76,11 +80,10 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
                 <button
                   key={t}
                   onClick={() => setType(QuestionType[t])}
-                  className={`py-4 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 transition-all shadow-sm ${
-                    type === QuestionType[t] 
-                      ? 'bg-[#004A98] text-white border-[#004A98] shadow-lg shadow-[#004A98]/20' 
-                      : 'bg-white text-slate-500 border-slate-200 hover:border-[#004A98]/40'
-                  }`}
+                  className={`py-4 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 transition-all shadow-sm ${type === QuestionType[t]
+                    ? 'bg-[#004A98] text-white border-[#004A98] shadow-lg shadow-[#004A98]/20'
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-[#004A98]/40'
+                    }`}
                 >
                   {t.replace('_', ' ')}
                 </button>
@@ -99,7 +102,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
                     <div className="w-12 h-12 bg-[#FACC15] rounded-xl flex items-center justify-center text-[#004A98] font-black flex-shrink-0 text-lg shadow-sm">
                       {type === QuestionType.RANKING ? i + 1 : String.fromCharCode(65 + i)}
                     </div>
-                    <input 
+                    <input
                       type="text"
                       value={opt}
                       onChange={(e) => handleOptionChange(i, e.target.value)}
@@ -107,7 +110,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
                       className="flex-grow bg-white border-2 border-slate-200 rounded-xl px-5 py-2 focus:outline-none focus:border-[#004A98] font-black text-slate-900 placeholder:text-slate-300"
                     />
                     {options.length > 2 && (
-                      <button 
+                      <button
                         onClick={() => handleRemoveOption(i)}
                         className="p-3 text-slate-300 hover:text-red-500 transition-colors"
                       >
@@ -119,7 +122,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
                   </div>
                 ))}
               </div>
-              <button 
+              <button
                 onClick={handleAddOption}
                 className="flex items-center gap-2 text-[#004A98] text-[10px] font-black uppercase tracking-widest hover:bg-[#004A98]/10 px-4 py-3 rounded-xl transition-all ml-1 mt-4 border-2 border-dashed border-[#004A98]/30"
               >
@@ -148,7 +151,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
           <div>
             <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-4 ml-1">Polling Duration (Seconds)</label>
             <div className="flex items-center gap-6 bg-white p-6 rounded-2xl border-2 border-slate-100">
-              <input 
+              <input
                 type="range"
                 min="30"
                 max="600"
@@ -161,15 +164,41 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
             </div>
           </div>
 
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <h4 className="font-black text-slate-800 text-sm uppercase tracking-tight">One Response Per Student</h4>
+              <p className="text-xs text-slate-500 font-bold mt-1">Prevents tampering by blocking multiple submissions from the same device.</p>
+            </div>
+            <button
+              onClick={() => setPreventMultiple(!preventMultiple)}
+              className={`w-14 h-8 rounded-full relative transition-all duration-300 ${preventMultiple ? 'bg-green-500' : 'bg-slate-300'}`}
+            >
+              <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${preventMultiple ? 'left-7' : 'left-1'}`}></div>
+            </button>
+          </div>
+
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <h4 className="font-black text-slate-800 text-sm uppercase tracking-tight">Pre-Assessment Lobby</h4>
+              <p className="text-xs text-slate-500 font-bold mt-1">Wait for all students to join before starting the countdown.</p>
+            </div>
+            <button
+              onClick={() => setHasLobby(!hasLobby)}
+              className={`w-14 h-8 rounded-full relative transition-all duration-300 ${hasLobby ? 'bg-[#004A98]' : 'bg-slate-300'}`}
+            >
+              <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${hasLobby ? 'left-7' : 'left-1'}`}></div>
+            </button>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-5 pt-12">
-            <button 
-              onClick={() => { if(validate()) onSaveDraft(getFinalQuestion(true)); }}
+            <button
+              onClick={() => { if (validate()) onSaveDraft(getFinalQuestion(true)); }}
               className="flex-1 py-5 border-2 border-slate-200 text-slate-700 font-black rounded-2xl hover:bg-slate-50 transition-all uppercase text-xs tracking-widest shadow-sm"
             >
               Save to Drafts
             </button>
-            <button 
-              onClick={() => { if(validate()) onCreate(getFinalQuestion(false)); }}
+            <button
+              onClick={() => { if (validate()) onCreate(getFinalQuestion(false)); }}
               className="flex-2 bg-[#004A98] text-white font-black py-5 px-14 rounded-2xl hover:bg-[#003875] transition-all shadow-xl shadow-[#004A98]/30 uppercase text-xs tracking-widest"
             >
               Confirm & Launch Live

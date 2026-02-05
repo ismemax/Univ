@@ -11,9 +11,17 @@ interface StudentPollProps {
 const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished }) => {
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [alreadyVoted, setAlreadyVoted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(session.question.timeLimit);
 
   useEffect(() => {
+    // Check if this device has already submitted for this specific session ID
+    const submissionKey = `umak_submitted_${session.id}`;
+    if (session.question.preventMultipleResponses && localStorage.getItem(submissionKey)) {
+      setAlreadyVoted(true);
+      setHasSubmitted(true);
+    }
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -30,6 +38,12 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     if (selectedOption === null || (typeof selectedOption === 'string' && !selectedOption.trim())) {
       return alert('Please provide a response.');
     }
+
+    // Lock this device for this session
+    if (session.question.preventMultipleResponses) {
+      localStorage.setItem(`umak_submitted_${session.id}`, 'true');
+    }
+
     onSubmit(selectedOption);
     setHasSubmitted(true);
   };
@@ -100,6 +114,29 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     }
   };
 
+  if (session.status === 'waiting') {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-20 text-center">
+        <div className="bg-white border-2 border-slate-200 rounded-3xl p-10 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
+            <div className="bg-[#004A98] h-full w-1/3 animate-[loading_2s_infinite]"></div>
+          </div>
+          <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8 relative">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[#004A98]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
+          </div>
+          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Connected</h2>
+          <p className="text-slate-600 font-bold mb-10 text-lg">You have successfully joined the session. Please wait for the instructor to start the assessment.</p>
+          <div className="bg-slate-50 border border-slate-100 py-3 px-6 rounded-xl text-xs font-black text-slate-400 uppercase tracking-widest">
+            Waiting for {session.question.text.substring(0, 20)}...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (timeLeft === 0) {
     return (
       <div className="max-w-xl mx-auto px-6 py-20 text-center">
@@ -146,13 +183,25 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           </div>
         ) : (
           <div className="py-14 flex flex-col items-center text-center">
-            <div className="w-24 h-24 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center mb-8 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
+            <div className={`w-24 h-24 ${alreadyVoted ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'} rounded-3xl flex items-center justify-center mb-8 shadow-sm`}>
+              {alreadyVoted ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
             </div>
-            <h3 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Response Confirmed</h3>
-            <p className="text-slate-600 font-bold mb-12 text-lg leading-relaxed">Your data has been securely transmitted. You can now return to the main dashboard.</p>
+            <h3 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">
+              {alreadyVoted ? 'Access Restricted' : 'Response Confirmed'}
+            </h3>
+            <p className="text-slate-600 font-bold mb-12 text-lg leading-relaxed">
+              {alreadyVoted
+                ? 'Our records show you have already submitted a response for this session. Multiple entries are disabled for this assessment.'
+                : 'Your data has been securely transmitted. You can now return to the main dashboard.'}
+            </p>
             <button onClick={onFinished} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all">Back to Home</button>
           </div>
         )}

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Session } from '../types';
 import { Icons, STORAGE_KEYS } from '../constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { db, ref, update } from '../firebase';
 
 interface Notification {
   id: string;
@@ -29,7 +30,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
 
   // Timer Effect: Decrement timeLeft every second
   useEffect(() => {
-    if (timeLeft <= 0 || session.status === 'ended' || isPaused) return;
+    if (timeLeft <= 0 || session.status === 'ended' || isPaused || session.status === 'waiting') return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -68,6 +69,15 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   }, [session]);
 
   const COLORS_PALETTE = ['#004A98', '#FACC15', '#64748b', '#94a3b8', '#cbd5e1'];
+
+  const handleStartSession = async () => {
+    const sessionRef = ref(db, 'active_session');
+    await update(sessionRef, {
+      status: 'active',
+      isStarted: true,
+      startTime: Date.now()
+    });
+  };
 
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(session, null, 2));
@@ -131,15 +141,24 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             </div>
 
             <div className="flex gap-4 mt-10">
-              <button
-                onClick={() => setIsPaused(!isPaused)}
-                className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${isPaused
-                  ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
-                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
-              >
-                {isPaused ? 'Resume Session' : 'Pause Session'}
-              </button>
+              {session.status === 'waiting' ? (
+                <button
+                  onClick={handleStartSession}
+                  className="flex-1 bg-[#004A98] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-[#004A98]/20 hover:bg-[#003875] transition-all"
+                >
+                  Start Assessment Now
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsPaused(!isPaused)}
+                  className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${isPaused
+                    ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                >
+                  {isPaused ? 'Resume Session' : 'Pause Session'}
+                </button>
+              )}
               <button
                 onClick={onEnd}
                 className="flex-1 bg-white border-2 border-red-200 text-red-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-red-50 transition-colors"

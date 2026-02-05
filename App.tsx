@@ -101,10 +101,11 @@ const App: React.FC = () => {
       id: Math.random().toString(36).substring(7),
       accessCode: Math.floor(1000 + Math.random() * 9000).toString(),
       question,
-      status: 'active',
+      status: question.hasLobby ? 'waiting' : 'active',
       participantsCount: 0,
       responses: {},
       startTime: Date.now(),
+      isStarted: !question.hasLobby,
     };
 
     set(ref(db, 'active_session'), newSession);

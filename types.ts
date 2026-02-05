@@ -17,16 +17,19 @@ export interface Question {
   createdAt: number;
   isDraft?: boolean;
   creatorId?: string;
+  preventMultipleResponses?: boolean;
+  hasLobby?: boolean;
 }
 
 export interface Session {
   id: string;
   accessCode: string;
   question: Question;
-  status: 'active' | 'paused' | 'ended';
+  status: 'active' | 'paused' | 'ended' | 'waiting';
   participantsCount: number;
   responses: Record<string, any>;
   startTime: number;
+  isStarted: boolean;
 }
 
 export type UserRole = 'FACULTY' | 'STUDENT' | null;
