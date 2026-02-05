@@ -1,27 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, Question, QuestionType } from '../types';
+import { User, Assessment, QuestionType } from '../types';
 import { STORAGE_KEYS } from '../constants';
 
 interface FacultyDashboardProps {
   user: User;
   onCreateNew: () => void;
-  onStartSession: (q: Question) => void;
-  onEditDraft: (q: Question) => void;
+  onStartSession: (a: Assessment) => void;
+  onEditDraft: (a: Assessment) => void;
 }
 
 const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, onStartSession, onEditDraft }) => {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
 
   useEffect(() => {
     const db = JSON.parse(localStorage.getItem(STORAGE_KEYS.QUESTIONS) || '[]');
-    setQuestions([...db].reverse());
+    setAssessments([...db].reverse());
   }, []);
 
-  const deleteQuestion = (id: string) => {
-    const updated = questions.filter(q => q.id !== id);
+  const deleteAssessment = (id: string) => {
+    const updated = assessments.filter(a => a.id !== id);
     localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updated));
-    setQuestions(updated);
+    setAssessments(updated);
   };
 
   return (
@@ -38,12 +38,12 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
-          New Assessment
+          New Assessment Bundle
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {questions.length === 0 ? (
+        {assessments.length === 0 ? (
           <div className="col-span-full py-24 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,45 +54,43 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
             <p className="text-slate-500 text-xs mt-1 font-medium">Ready to create your first academic questionnaire?</p>
           </div>
         ) : (
-          questions.map((q) => (
-            <div key={q.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative">
+          assessments.map((a) => (
+            <div key={a.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-2">
-                  <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${q.type === QuestionType.MULTIPLE_CHOICE ? 'bg-blue-50 text-blue-700' :
-                      q.type === QuestionType.TRUE_FALSE ? 'bg-green-50 text-green-700' :
-                        q.type === QuestionType.RATING_SCALE ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-700'
-                    }`}>
-                    {q.type.replace('_', ' ')}
+                  <span className="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-blue-50 text-[#004A98]">
+                    {a.questions.length} Question{a.questions.length > 1 ? 's' : ''}
                   </span>
-                  {q.isDraft && (
+                  {a.isDraft && (
                     <span className="bg-[#FACC15] text-[#004A98] px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">
                       Draft
                     </span>
                   )}
                 </div>
-                <span className="text-[9px] font-black text-slate-400">{new Date(q.createdAt).toLocaleDateString()}</span>
+                <span className="text-[9px] font-black text-slate-400">{new Date(a.createdAt).toLocaleDateString()}</span>
               </div>
 
-              <h4 className="text-lg font-black text-slate-900 mb-6 line-clamp-2 min-h-[3.5rem] leading-tight">{q.text}</h4>
+              <h4 className="text-lg font-black text-slate-900 mb-2 line-clamp-2 min-h-[3.5rem] leading-tight">{a.title}</h4>
+              <p className="text-xs text-slate-400 font-bold mb-6 italic truncate">{a.questions[0]?.text}</p>
 
               <div className="flex items-center gap-3 mt-auto">
-                {q.isDraft ? (
+                {a.isDraft ? (
                   <button
-                    onClick={() => onEditDraft(q)}
+                    onClick={() => onEditDraft(a)}
                     className="flex-1 bg-white border border-[#004A98] text-[#004A98] hover:bg-[#004A98] hover:text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider"
                   >
                     Edit Draft
                   </button>
                 ) : (
                   <button
-                    onClick={() => onStartSession(q)}
+                    onClick={() => onStartSession(a)}
                     className="flex-1 bg-[#004A98] text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider shadow-sm hover:shadow-md"
                   >
                     Launch Live
                   </button>
                 )}
                 <button
-                  onClick={() => deleteQuestion(q.id)}
+                  onClick={() => deleteAssessment(a.id)}
                   className="p-2.5 text-slate-400 hover:text-red-500 transition-colors"
                   title="Delete"
                 >

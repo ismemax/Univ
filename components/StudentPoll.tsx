@@ -10,55 +10,60 @@ interface StudentPollProps {
 }
 
 const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished }) => {
+  const currentIdx = session.currentQuestionIndex || 0;
+  const activeQ = session.questions[currentIdx];
+
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [alreadyVoted, setAlreadyVoted] = useState(false);
-  // Initialize timeLeft based on current session State to avoid jump
+
+  // Initialize timeLeft
   const getInitialTime = () => {
-    if (!session.startTime || session.status === 'waiting') return session.question.timeLimit;
+    if (!session.startTime || session.status === 'waiting' || !activeQ) return activeQ?.timeLimit || 60;
     const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
-    return Math.max(0, session.question.timeLimit - elapsed);
+    return Math.max(0, activeQ.timeLimit - elapsed);
   };
 
   const [timeLeft, setTimeLeft] = useState(getInitialTime());
 
+  // Reset local state when question changes
   useEffect(() => {
-    if (!session || !session.question) return;
+    setHasSubmitted(false);
+    setAlreadyVoted(false);
+    setSelectedOption(null);
+    setTimeLeft(activeQ.timeLimit);
 
-    // Check for previous submission
-    const submissionKey = `umak_submitted_${session.id}`;
-    if (session.question.preventMultipleResponses && localStorage.getItem(submissionKey)) {
+    // Check for previous submission for THIS specific question
+    const submissionKey = `umak_submitted_${session.id}_q${currentIdx}`;
+    if (activeQ?.preventMultipleResponses && localStorage.getItem(submissionKey)) {
       setAlreadyVoted(true);
       setHasSubmitted(true);
     }
+  }, [currentIdx, session.id]);
+
+  useEffect(() => {
+    if (!session || !activeQ) return;
 
     if (session.status !== 'active' || !session.startTime) {
-      if (session.status === 'waiting') setTimeLeft(session.question.timeLimit);
+      if (session.status === 'waiting') setTimeLeft(activeQ.timeLimit);
       return;
     }
 
     const syncTime = () => {
       const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
-      const remaining = Math.max(0, session.question.timeLimit - elapsed);
+      const remaining = Math.max(0, activeQ.timeLimit - elapsed);
       setTimeLeft(remaining);
-
-      if (remaining <= 0) {
-        console.log("Session time reached zero.");
-        return 0;
-      }
       return remaining;
     };
 
-    // Immediate sync
     syncTime();
-
     const timer = setInterval(() => {
       const remaining = syncTime();
       if (remaining <= 0) clearInterval(timer);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [session.status, session.startTime, session.id]);
+  }, [session.status, session.startTime, session.id, currentIdx]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -71,9 +76,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
       return alert('Please provide a response.');
     }
 
-    // Lock this device for this session
-    if (session.question.preventMultipleResponses) {
-      localStorage.setItem(`umak_submitted_${session.id}`, 'true');
+    if (activeQ.preventMultipleResponses) {
+      localStorage.setItem(`umak_submitted_${session.id}_q${currentIdx}`, 'true');
     }
 
     const secureResponse = typeof selectedOption === 'string' ? sanitizeInput(selectedOption) : selectedOption;
@@ -82,14 +86,13 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   };
 
   const renderInput = () => {
-    const q = session.question;
-    switch (q.type) {
+    switch (activeQ.type) {
       case QuestionType.MULTIPLE_CHOICE:
       case QuestionType.TRUE_FALSE:
       case QuestionType.RATING_SCALE:
         return (
           <div className="space-y-4">
-            {(q.options || []).map((opt, i) => (
+            {(activeQ.options || []).map((opt, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedOption(i)}
@@ -129,7 +132,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
         return (
           <div className="space-y-4">
             <p className="text-xs text-slate-500 uppercase font-black mb-4 tracking-widest bg-slate-50 p-4 rounded-xl text-center border border-slate-100">Touch items to set priority order</p>
-            {q.options.map((opt, i) => (
+            {activeQ.options.map((opt, i) => (
               <button
                 key={i}
                 className="w-full text-left p-5 rounded-2xl border-2 border-slate-200 bg-white shadow-sm flex items-center justify-between transition-transform active:scale-95"
@@ -147,7 +150,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     }
   };
 
-  if (!session || !session.question) {
+  if (!session || !activeQ) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse font-black text-[#004A98] uppercase tracking-widest text-xs">Authenticating Session...</div>
@@ -170,15 +173,12 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           </div>
           <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Connected</h2>
           <p className="text-slate-600 font-bold mb-10 text-lg">You have successfully joined the session. Please wait for the instructor to start the assessment.</p>
-          <div className="bg-slate-50 border border-slate-100 py-3 px-6 rounded-xl text-xs font-black text-slate-400 uppercase tracking-widest">
-            Waiting for {session.question.text.substring(0, 20)}...
-          </div>
         </div>
       </div>
     );
   }
 
-  if (timeLeft === 0) {
+  if (timeLeft === 0 && !hasSubmitted) {
     return (
       <div className="max-w-xl mx-auto px-6 py-20 text-center">
         <div className="bg-white border-2 border-slate-200 rounded-3xl p-10 shadow-2xl">
@@ -187,9 +187,9 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Assessment Expired</h2>
-          <p className="text-slate-600 font-bold mb-10 text-lg">The poll has been closed. Your input is valuable, but unfortunately, the response window has ended.</p>
-          <button onClick={onFinished} className="w-full bg-[#004A98] text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-[#004A98]/20 active:scale-95 transition-all">Return to Home Portal</button>
+          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Time Expired</h2>
+          <p className="text-slate-600 font-bold mb-10 text-lg">The response window for this question has ended. Please wait for the next question.</p>
+          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waiting for next phase...</div>
         </div>
       </div>
     );
@@ -199,18 +199,20 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     <div className="max-w-xl mx-auto px-6 py-12">
       <div className="bg-white border-2 border-slate-200 rounded-[40px] shadow-2xl p-10 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-2 bg-slate-100">
-          <div className="bg-[#FACC15] h-full transition-all duration-1000 ease-linear shadow-sm" style={{ width: `${(timeLeft / session.question.timeLimit) * 100}%` }}></div>
+          <div className="bg-[#FACC15] h-full transition-all duration-1000 ease-linear shadow-sm" style={{ width: `${(timeLeft / activeQ.timeLimit) * 100}%` }}></div>
         </div>
 
         <div className="flex justify-between items-center mb-12 mt-4">
-          <span className="text-xs font-black text-[#004A98] uppercase tracking-[0.2em] bg-[#004A98]/5 px-3 py-1 rounded-md">Live Assessment • {session.question.type.replace('_', ' ')}</span>
+          <span className="text-xs font-black text-[#004A98] uppercase tracking-[0.2em] bg-[#004A98]/5 px-3 py-1 rounded-md">
+            QUESTION {currentIdx + 1} OF {session.questions.length}
+          </span>
           <div className="bg-red-50 text-red-600 px-4 py-1.5 rounded-xl text-sm font-black flex items-center gap-2 border border-red-100">
             <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-pulse shadow-sm shadow-red-600/50"></span>
             {formatTime(timeLeft)}
           </div>
         </div>
 
-        <h2 className="text-3xl font-black text-slate-900 mb-12 leading-tight tracking-tight">{session.question.text}</h2>
+        <h2 className="text-3xl font-black text-slate-900 mb-12 leading-tight tracking-tight">{activeQ.text}</h2>
 
         {!hasSubmitted ? (
           <div className="space-y-8">
@@ -240,10 +242,15 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
             </h3>
             <p className="text-slate-600 font-bold mb-12 text-lg leading-relaxed">
               {alreadyVoted
-                ? 'Our records show you have already submitted a response for this session. Multiple entries are disabled for this assessment.'
-                : 'Your data has been securely transmitted. You can now return to the main dashboard.'}
+                ? 'Multiple entries are disabled. You have already submitted for this question.'
+                : 'Your response for this question is locked in. Please wait for the instructor to advance.'}
             </p>
-            <button onClick={onFinished} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all">Back to Home</button>
+            {currentIdx === session.questions.length - 1 && session.status === 'ended' && (
+              <button onClick={onFinished} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all">Back to Home</button>
+            )}
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {currentIdx < session.questions.length - 1 ? 'Waiting for Next Question...' : 'Assessment Complete'}
+            </div>
           </div>
         )}
       </div>

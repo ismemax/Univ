@@ -18,53 +18,46 @@ interface LiveSessionProps {
 
 const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEnd }) => {
   const [session, setSession] = useState<Session>(initialSession);
-  const [timeLeft, setTimeLeft] = useState(initialSession.question.timeLimit);
+  const currentIdx = session.currentQuestionIndex || 0;
+  const activeQ = session.questions[currentIdx];
+
+  const [timeLeft, setTimeLeft] = useState(activeQ.timeLimit);
   const [isPaused, setIsPaused] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Sync state when initialSession changes (e.g., from another tab or response update)
+  // Sync state when initialSession changes
   useEffect(() => {
     setSession(initialSession);
-    // DO NOT reset timeLeft here, it causes the timer to reset when student answers
   }, [initialSession]);
 
-  // Timer Effect: Sync with session startTime and handle countdown
+  // Timer Effect
   useEffect(() => {
     if (session.status === 'ended' || isPaused || session.status === 'waiting' || !session.startTime) return;
 
     const timer = setInterval(() => {
       const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
-      const remainingTime = Math.max(0, session.question.timeLimit - elapsed);
+      const remainingTime = Math.max(0, activeQ.timeLimit - elapsed);
 
       setTimeLeft(remainingTime);
 
-      // When timer reaches 0, end the session
+      // When timer reaches 0, we don't end entire session automatically if more questions exist
+      // But for simple consistency, we'll mark this specific question phase as "ended-looking" or just stop timer
       if (remainingTime === 0 && session.status !== 'ended') {
-        const sessionRef = ref(db, 'active_session');
-        update(sessionRef, { status: 'ended' as const });
+        // We can just leave it at 0. The teacher manually goes to next.
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [session.status, isPaused, session.startTime, session.question.timeLimit]);
-
-  // Automatically clear old notifications after 4 seconds
-  useEffect(() => {
-    if (notifications.length === 0) return;
-    const timer = setTimeout(() => {
-      setNotifications(prev => prev.slice(0, prev.length - 1));
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [notifications]);
+  }, [session.status, isPaused, session.startTime, activeQ.timeLimit]);
 
   const chartData = useMemo(() => {
-    if (!session || !session.question || !session.question.options) return [];
-    const responses = session.responses || {};
-    return session.question.options.map((opt, i) => ({
+    if (!activeQ || !activeQ.options) return [];
+    const responses = (session.allResponses && session.allResponses[currentIdx]) || {};
+    return activeQ.options.map((opt, i) => ({
       name: opt,
       value: responses[i] || 0
     }));
-  }, [session]);
+  }, [session, currentIdx, activeQ]);
 
   const COLORS_PALETTE = ['#004A98', '#FACC15', '#64748b', '#94a3b8', '#cbd5e1'];
 
@@ -77,6 +70,18 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     });
   };
 
+  const handleNextQuestion = async () => {
+    if (currentIdx >= session.questions.length - 1) return;
+
+    const sessionRef = ref(db, 'active_session');
+    await update(sessionRef, {
+      currentQuestionIndex: currentIdx + 1,
+      startTime: Date.now(), // Reset timer for next question
+      status: 'active'
+    });
+    setTimeLeft(session.questions[currentIdx + 1].timeLimit);
+  };
+
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(session, null, 2));
     const downloadAnchorNode = document.createElement('a');
@@ -87,7 +92,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     downloadAnchorNode.remove();
   };
 
-  if (!session || !session.question) {
+  if (!session || !activeQ) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -100,24 +105,6 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 relative">
-      {/* Toast Notifications */}
-      <div className="fixed top-24 right-6 z-[60] flex flex-col gap-3 pointer-events-none">
-        {notifications.map((n) => (
-          <div
-            key={n.id}
-            className="bg-white border-l-4 border-[#004A98] shadow-xl px-6 py-4 rounded-r-xl flex items-center gap-3 animate-in slide-in-from-right-full duration-300 pointer-events-auto"
-          >
-            <div className="w-8 h-8 bg-[#004A98]/10 rounded-full flex items-center justify-center">
-              <span className="w-2 h-2 bg-[#004A98] rounded-full animate-ping"></span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-black text-slate-900">{n.message}</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Just now</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Left Side: Stats & Session Info */}
         <div className="flex-1 space-y-8">
@@ -125,10 +112,12 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1 pr-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-black text-[#004A98] uppercase tracking-widest block">Live Session Active</span>
+                  <span className="text-xs font-black text-[#004A98] uppercase tracking-widest block">
+                    Question {currentIdx + 1} of {session.questions.length}
+                  </span>
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 leading-tight">{session.question.text}</h2>
+                <h2 className="text-3xl font-black text-slate-900 leading-tight">{activeQ.text}</h2>
               </div>
               <div className="text-right">
                 <span className="text-sm font-bold text-slate-500 block">Access Code</span>
@@ -144,7 +133,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 </span>
               </div>
               <div className="bg-white border-2 border-[#004A98]/10 rounded-xl p-6 flex flex-col items-center justify-center">
-                <span className="text-xs font-black text-[#004A98]/70 uppercase mb-2">Total Responses</span>
+                <span className="text-xs font-black text-[#004A98]/70 uppercase mb-2">Total Participants</span>
                 <span className="text-5xl font-black text-[#004A98]">{session.participantsCount}</span>
               </div>
             </div>
@@ -158,35 +147,52 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                   Start Assessment Now
                 </button>
               ) : (
-                <button
-                  onClick={() => setIsPaused(!isPaused)}
-                  className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${isPaused
-                    ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                >
-                  {isPaused ? 'Resume Session' : 'Pause Session'}
-                </button>
+                <>
+                  <button
+                    onClick={() => setIsPaused(!isPaused)}
+                    className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${isPaused
+                      ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                  >
+                    {isPaused ? 'Resume' : 'Pause'}
+                  </button>
+                  {currentIdx < session.questions.length - 1 && (
+                    <button
+                      onClick={handleNextQuestion}
+                      className="flex-1 bg-[#FACC15] text-[#004A98] py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-yellow-400 transition-all border-2 border-yellow-300"
+                    >
+                      Next Question
+                    </button>
+                  )}
+                </>
               )}
               <button
                 onClick={onEnd}
                 className="flex-1 bg-white border-2 border-red-200 text-red-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-red-50 transition-colors"
               >
-                Terminate Poll
+                End Session
               </button>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="font-black text-slate-900 text-lg uppercase tracking-wide">Real-time Breakdown</h3>
-              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">Updates automatically</div>
+              <h3 className="font-black text-slate-900 text-lg uppercase tracking-wide">Question Breakdown</h3>
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">Active Live Metrics</div>
             </div>
             <div className="space-y-6">
-              {(session.question.options || []).map((opt: string, i: number) => {
-                const responses = session.responses || {};
+              {(activeQ.options || []).map((opt: string, i: number) => {
+                const responses = (session.allResponses && session.allResponses[currentIdx]) || {};
                 const count = responses[i] || 0;
-                const pct = session.participantsCount > 0 ? (count / session.participantsCount * 100).toFixed(0) : 0;
+                // Calculate percentage relative to total responses for THIS question? 
+                // Or just participantsCount (which is total people joined).
+                const totalResponses = Object.values(responses).reduce((a: any, b: any) => {
+                  if (typeof b === 'number') return a + b;
+                  return a + (Array.isArray(b) ? b.length : 0);
+                }, 0) as number;
+
+                const pct = totalResponses > 0 ? (count / totalResponses * 100).toFixed(0) : 0;
                 return (
                   <div key={i}>
                     <div className="flex justify-between text-sm mb-2">
@@ -205,18 +211,17 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             </div>
           </div>
 
-          {/* Text Responses for Short Answer / Essay */}
-          {(session.question.type === 'SHORT_ANSWER' || session.question.type === 'ESSAY') && (
+          {(activeQ.type === 'SHORT_ANSWER' || activeQ.type === 'ESSAY') && (
             <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
               <div className="flex justify-between items-center mb-8">
-                <h3 className="font-black text-slate-900 text-lg uppercase tracking-wide">Latest Open Responses</h3>
+                <h3 className="font-black text-slate-900 text-lg uppercase tracking-wide">Open Responses (Q{currentIdx + 1})</h3>
                 <div className="text-[10px] font-black text-[#004A98] uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">
-                  {session.responses?.text?.length || 0} Submissions
+                  {(session.allResponses && session.allResponses[currentIdx]?.text?.length) || 0} Submissions
                 </div>
               </div>
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {session.responses?.text?.length > 0 ? (
-                  session.responses.text.slice().reverse().map((txt: string, i: number) => (
+                {session.allResponses && session.allResponses[currentIdx]?.text?.length > 0 ? (
+                  session.allResponses[currentIdx].text.slice().reverse().map((txt: string, i: number) => (
                     <div key={i} className="bg-slate-50 border border-slate-100 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2">
                       <p className="text-slate-800 font-bold text-sm leading-relaxed">{txt}</p>
                       <span className="text-[9px] font-black text-slate-400 uppercase mt-2 block tracking-widest">Received recently</span>
@@ -243,11 +248,10 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             <div className="bg-slate-900 py-3 px-6 rounded-lg text-sm font-black text-[#FACC15] mb-8 w-full shadow-lg">
               umak.edu.ph/poll/{session.accessCode}
             </div>
-            <button className="text-xs font-black text-[#004A98] hover:underline uppercase tracking-widest opacity-60">Share Session Image</button>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm h-[360px] flex flex-col">
-            <h3 className="font-black text-slate-900 mb-6 uppercase tracking-wide">Live Trends</h3>
+            <h3 className="font-black text-slate-900 mb-6 uppercase tracking-wide">Live Trend Chart</h3>
             <div className="flex-grow">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -285,7 +289,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#004A98]" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
-              Export Results as JSON
+              Export Results
             </button>
           </div>
         </div>
@@ -293,6 +297,5 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     </div>
   );
 };
-
 
 export default LiveSession;

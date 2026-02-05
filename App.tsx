@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ViewState, Session, Question, User } from './types';
+import { ViewState, Session, Question, User, Assessment } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
@@ -23,7 +23,7 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [studentSession, setStudentSession] = useState<Session | null>(null);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
 
   // Sync across devices via Firebase and initial load
   useEffect(() => {
@@ -88,36 +88,37 @@ const App: React.FC = () => {
     setView('HOME');
   };
 
-  const saveToDatabase = (question: Question) => {
+  const saveToDatabase = (assessment: Assessment) => {
     const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-    const existingIdx = db.findIndex((q: Question) => q.id === question.id);
+    const existingIdx = db.findIndex((a: Assessment) => a.id === assessment.id);
 
     if (existingIdx > -1) {
-      db[existingIdx] = { ...question, creatorId: currentUser?.id };
+      db[existingIdx] = { ...assessment, creatorId: currentUser?.id };
     } else {
-      db.push({ ...question, creatorId: currentUser?.id });
+      db.push({ ...assessment, creatorId: currentUser?.id });
     }
 
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   };
 
-  const handleSaveDraft = (question: Question) => {
-    saveToDatabase({ ...question, isDraft: true });
+  const handleSaveDraft = (assessment: Assessment) => {
+    saveToDatabase({ ...assessment, isDraft: true });
     setView('FACULTY_DASHBOARD');
   };
 
-  const handleCreateSession = (question: Question) => {
-    saveToDatabase({ ...question, isDraft: false });
+  const handleCreateSession = (assessment: Assessment) => {
+    saveToDatabase({ ...assessment, isDraft: false });
 
     const newSession: Session = {
       id: Math.random().toString(36).substring(7),
       accessCode: Math.floor(1000 + Math.random() * 9000).toString(),
-      question,
-      status: question.hasLobby ? 'waiting' : 'active',
+      questions: assessment.questions,
+      currentQuestionIndex: 0,
+      status: assessment.hasLobby ? 'waiting' : 'active',
       participantsCount: 0,
-      responses: {},
+      allResponses: {},
       startTime: Date.now(),
-      isStarted: !question.hasLobby,
+      isStarted: !assessment.hasLobby,
     };
 
     set(ref(db, 'active_session'), newSession);
@@ -125,8 +126,8 @@ const App: React.FC = () => {
     setView('FACULTY_LIVE');
   };
 
-  const handleEditDraft = (question: Question) => {
-    setEditingQuestion(question);
+  const handleEditDraft = (assessment: Assessment) => {
+    setEditingAssessment(assessment);
     setView('FACULTY_EDIT');
   };
 
@@ -138,15 +139,16 @@ const App: React.FC = () => {
       const session: Session = snapshot.val();
       if (!session || session.status !== 'active') return;
 
+      const qIdx = session.currentQuestionIndex || 0;
       const updates: any = {};
       updates['participantsCount'] = (session.participantsCount || 0) + 1;
 
       if (typeof responseIndex === 'number') {
-        const currentCount = (session.responses && session.responses[responseIndex]) || 0;
-        updates[`responses/${responseIndex}`] = currentCount + 1;
+        const currentCount = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx][responseIndex]) || 0;
+        updates[`allResponses/${qIdx}/${responseIndex}`] = currentCount + 1;
       } else {
-        const currentTexts = (session.responses && session.responses.text) || [];
-        updates['responses/text'] = [...currentTexts, responseIndex];
+        const currentTexts = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].text) || [];
+        updates[`allResponses/${qIdx}/text`] = [...currentTexts, responseIndex];
       }
 
       await update(sessionRef, updates);
@@ -191,15 +193,15 @@ const App: React.FC = () => {
         return currentUser?.role === 'FACULTY' ? (
           <FacultyDashboard
             user={currentUser}
-            onCreateNew={() => { setEditingQuestion(null); setView('FACULTY_CREATE'); }}
+            onCreateNew={() => { setEditingAssessment(null); setView('FACULTY_CREATE'); }}
             onStartSession={handleCreateSession}
-            onEditDraft={handleEditDraft}
+            onEditDraft={(q: any) => { setEditingAssessment(q); setView('FACULTY_EDIT'); }}
           />
         ) : <Home setView={setView} onJoin={handleJoinSession} />;
       case 'FACULTY_CREATE':
       case 'FACULTY_EDIT':
         return <QuestionnaireCreator
-          initialData={editingQuestion || undefined}
+          initialData={editingAssessment || undefined}
           onCreate={handleCreateSession}
           onSaveDraft={handleSaveDraft}
           onCancel={() => setView('FACULTY_DASHBOARD')}

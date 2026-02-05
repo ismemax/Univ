@@ -14,6 +14,12 @@ export interface Question {
   type: QuestionType;
   options: string[];
   timeLimit: number;
+}
+
+export interface Assessment {
+  id: string;
+  title: string;
+  questions: Question[];
   createdAt: number;
   isDraft?: boolean;
   creatorId?: string;
@@ -24,10 +30,12 @@ export interface Question {
 export interface Session {
   id: string;
   accessCode: string;
-  question: Question;
+  questions: Question[];
+  currentQuestionIndex: number;
   status: 'active' | 'paused' | 'ended' | 'waiting';
   participantsCount: number;
-  responses: Record<string, any>;
+  // Responses will now be grouped by question index
+  allResponses: Record<number, Record<string, any>>;
   startTime: number;
   isStarted: boolean;
 }
