@@ -38,6 +38,7 @@ export interface Session {
   allResponses: Record<number, Record<string, any>>;
   startTime: number;
   isStarted: boolean;
+  preventMultipleResponses?: boolean;
 }
 
 export type UserRole = 'FACULTY' | 'STUDENT' | null;

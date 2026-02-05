@@ -130,6 +130,7 @@ const App: React.FC = () => {
         allResponses: {},
         startTime: Date.now(),
         isStarted: !assessment.hasLobby,
+        preventMultipleResponses: assessment.preventMultipleResponses ?? true, // Default to true for Academic integrity
       };
 
       // Ensure we clear any old active session reference first

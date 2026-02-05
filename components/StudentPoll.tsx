@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Session, QuestionType } from '../types';
-import { sanitizeInput } from '../utils/securityUtils';
+import { sanitizeInput, hasUserResponded, markUserResponded } from '../utils/securityUtils';
 
 interface StudentPollProps {
   session: Session;
@@ -34,8 +34,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     setTimeLeft(activeQ.timeLimit);
 
     // Check for previous submission for THIS specific question
-    const submissionKey = `umak_submitted_${session.id}_q${currentIdx}`;
-    if (activeQ?.preventMultipleResponses && localStorage.getItem(submissionKey)) {
+    if (session.preventMultipleResponses && hasUserResponded(session.id, currentIdx)) {
       setAlreadyVoted(true);
       setHasSubmitted(true);
     }
@@ -76,8 +75,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
       return alert('Please provide a response.');
     }
 
-    if (activeQ.preventMultipleResponses) {
-      localStorage.setItem(`umak_submitted_${session.id}_q${currentIdx}`, 'true');
+    if (session.preventMultipleResponses) {
+      markUserResponded(session.id, currentIdx);
     }
 
     const secureResponse = typeof selectedOption === 'string' ? sanitizeInput(selectedOption) : selectedOption;

@@ -49,6 +49,23 @@ export const isBotDetected = (honeypotValue: string): boolean => {
 };
 
 /**
+ * Checks if the user has already submitted a response for a specific question in a session.
+ * Prevents multiple submissions via page refresh.
+ */
+export const hasUserResponded = (sessionId: string, questionIndex: number): boolean => {
+    const key = `umak_sub_${sessionId}_${questionIndex}`;
+    return localStorage.getItem(key) === 'true';
+};
+
+/**
+ * Marks a question as responded for the current user.
+ */
+export const markUserResponded = (sessionId: string, questionIndex: number): void => {
+    const key = `umak_sub_${sessionId}_${questionIndex}`;
+    localStorage.setItem(key, 'true');
+};
+
+/**
  * Conditional logger that only prints in development mode.
  * Following "Disable debug logs in production" practice.
  */
