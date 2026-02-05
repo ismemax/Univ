@@ -4,13 +4,12 @@ import { getDatabase, ref, onValue, set, update, get } from "firebase/database";
 
 // USER: Please replace this with your actual Firebase project configuration from the Firebase Console
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDJkH1bcc9w5mfbeabpblfS6x6WgnPSO1s",
+    authDomain: "univ-633d8.firebaseapp.com",
+    projectId: "univ-633d8",
+    storageBucket: "univ-633d8.firebasestorage.app",
+    messagingSenderId: "1043212326820",
+    appId: "1:1043212326820:web:da8bbe32b37d7c6c5a1331"
 };
 
 const app = initializeApp(firebaseConfig);
