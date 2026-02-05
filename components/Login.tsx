@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { User, UserRole } from '../types';
+import { sanitizeInput } from '../utils/securityUtils';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -24,8 +25,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
     // Mock auth logic
     const user: User = {
       id: Math.random().toString(36).substring(7),
-      email,
-      name: name || (role === 'FACULTY' ? 'Professor Juan' : 'Student Heron'),
+      email: sanitizeInput(email),
+      name: sanitizeInput(name) || (role === 'FACULTY' ? 'Professor Juan' : 'Student Heron'),
       role
     };
     onLogin(user);
@@ -45,13 +46,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
 
         <div className="p-8">
           <div className="flex border-b-2 border-slate-100 mb-8">
-            <button 
+            <button
               onClick={() => setRole('FACULTY')}
               className={`flex-1 pb-4 text-xs font-black uppercase tracking-widest transition-all ${role === 'FACULTY' ? 'text-[#004A98] border-b-2 border-[#004A98]' : 'text-slate-400'}`}
             >
               Faculty
             </button>
-            <button 
+            <button
               onClick={() => setRole('STUDENT')}
               className={`flex-1 pb-4 text-xs font-black uppercase tracking-widest transition-all ${role === 'STUDENT' ? 'text-[#004A98] border-b-2 border-[#004A98]' : 'text-slate-400'}`}
             >
@@ -63,8 +64,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
             {isRegistering && (
               <div>
                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Full Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Juan Dela Cruz"
@@ -74,8 +75,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
             )}
             <div>
               <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="juan@umak.edu.ph"
@@ -84,8 +85,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
             </div>
             <div>
               <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -93,7 +94,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
               />
             </div>
 
-            <button 
+            <button
               type="submit"
               className="w-full bg-[#004A98] text-white font-black py-4 rounded-xl shadow-xl shadow-[#004A98]/20 hover:bg-[#003875] transition-all active:scale-[0.98] mt-4 uppercase text-xs tracking-widest"
             >
@@ -102,13 +103,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
           </form>
 
           <div className="mt-8 flex flex-col gap-4 text-center">
-            <button 
+            <button
               onClick={() => setIsRegistering(!isRegistering)}
               className="text-xs font-black text-slate-500 hover:text-[#004A98] transition-colors"
             >
               {isRegistering ? 'ALREADY HAVE AN ACCOUNT? LOGIN' : 'NEED A PORTAL ACCOUNT? REGISTER HERE'}
             </button>
-            <button 
+            <button
               onClick={onCancel}
               className="text-xs font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"
             >

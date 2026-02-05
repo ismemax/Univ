@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Session, QuestionType } from '../types';
+import { sanitizeInput } from '../utils/securityUtils';
 
 interface StudentPollProps {
   session: Session;
@@ -75,7 +76,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
       localStorage.setItem(`umak_submitted_${session.id}`, 'true');
     }
 
-    onSubmit(selectedOption);
+    const secureResponse = typeof selectedOption === 'string' ? sanitizeInput(selectedOption) : selectedOption;
+    onSubmit(secureResponse);
     setHasSubmitted(true);
   };
 

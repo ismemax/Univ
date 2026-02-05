@@ -12,6 +12,7 @@ import StudentPoll from './components/StudentPoll';
 
 import { Icons, STORAGE_KEYS } from './constants';
 import { db, ref, onValue, set, update, get } from './firebase';
+import { secureLog, handleGenericError, sanitizeInput } from './utils/securityUtils';
 
 const SESSION_KEY = STORAGE_KEYS.SESSION;
 const USER_KEY = STORAGE_KEYS.USER;
@@ -32,7 +33,7 @@ const App: React.FC = () => {
       try {
         setCurrentUser(JSON.parse(savedUser));
       } catch (e) {
-        console.error("Failed to parse user", e);
+        handleGenericError(e, "Session expired. Please log in again.");
       }
     }
 
@@ -139,7 +140,7 @@ const App: React.FC = () => {
 
       await update(sessionRef, updates);
     } catch (e) {
-      console.error("Firebase submission failed", e);
+      handleGenericError(e, "Failed to submit your response. Please check your connection.");
     }
   };
 
@@ -165,7 +166,7 @@ const App: React.FC = () => {
         alert('Entry Failed: There are no active academic sessions detected.');
       }
     } catch (e) {
-      console.error("Firebase join error:", e);
+      handleGenericError(e, "An error occurred while joining the session.");
     }
   };
 

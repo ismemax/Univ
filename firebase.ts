@@ -1,16 +1,17 @@
 
+/// <reference types="vite/client" />
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, set, update, get } from "firebase/database";
 
-// USER: Please replace this with your actual Firebase project configuration from the Firebase Console
+// Firebase project configuration from environment variables
 const firebaseConfig = {
-    apiKey: "AIzaSyDJkH1bcc9w5mfbeabpblfS6x6WgnPSO1s",
-    authDomain: "univ-633d8.firebaseapp.com",
-    databaseURL: "https://univ-633d8-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "univ-633d8",
-    storageBucket: "univ-633d8.firebasestorage.app",
-    messagingSenderId: "1043212326820",
-    appId: "1:1043212326820:web:da8bbe32b37d7c6c5a1331"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);

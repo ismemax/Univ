@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Question, QuestionType } from '../types';
+import { sanitizeInput } from '../utils/securityUtils';
 
 interface QuestionnaireCreatorProps {
   initialData?: Question;
@@ -27,11 +28,11 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
 
   const getFinalQuestion = (isDraft: boolean): Question => ({
     id: initialData?.id || Math.random().toString(36).substring(7),
-    text,
+    text: sanitizeInput(text),
     type,
     options: type === QuestionType.TRUE_FALSE ? ['True', 'False'] :
       type === QuestionType.RATING_SCALE ? ['1', '2', '3', '4', '5'] :
-        (type === QuestionType.SHORT_ANSWER || type === QuestionType.ESSAY) ? [] : options,
+        (type === QuestionType.SHORT_ANSWER || type === QuestionType.ESSAY) ? [] : options.map(o => sanitizeInput(o)),
     timeLimit,
     createdAt: initialData?.createdAt || Date.now(),
     isDraft,
