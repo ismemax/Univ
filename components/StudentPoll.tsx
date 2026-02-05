@@ -12,7 +12,14 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [alreadyVoted, setAlreadyVoted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(session.question.timeLimit);
+  // Initialize timeLeft based on current session State to avoid jump
+  const getInitialTime = () => {
+    if (!session.startTime || session.status === 'waiting') return session.question.timeLimit;
+    const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+    return Math.max(0, session.question.timeLimit - elapsed);
+  };
+
+  const [timeLeft, setTimeLeft] = useState(getInitialTime());
 
   useEffect(() => {
     if (!session || !session.question) return;
@@ -24,26 +31,39 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
       setHasSubmitted(true);
     }
 
-    if (session.status !== 'active') return;
+    if (session.status !== 'active' || !session.startTime) {
+      if (session.status === 'waiting') setTimeLeft(session.question.timeLimit);
+      return;
+    }
 
-    // Set initial time correctly if joining late
-    const calculateTime = () => {
-      const elapsed = Math.floor((Date.now() - (session.startTime || Date.now())) / 1000);
+    const syncTime = () => {
+      const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
       const remaining = Math.max(0, session.question.timeLimit - elapsed);
       setTimeLeft(remaining);
+
+      if (remaining <= 0) {
+        console.log("Session time reached zero.");
+        return 0;
+      }
       return remaining;
     };
 
-    calculateTime();
+    // Immediate sync
+    syncTime();
+
     const timer = setInterval(() => {
-      const remaining = calculateTime();
-      if (remaining <= 0) {
-        clearInterval(timer);
-      }
+      const remaining = syncTime();
+      if (remaining <= 0) clearInterval(timer);
     }, 1000);
 
     return () => clearInterval(timer);
   }, [session.status, session.startTime, session.id]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  };
 
   const handleSubmit = () => {
     if (selectedOption === null || (typeof selectedOption === 'string' && !selectedOption.trim())) {
@@ -184,7 +204,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           <span className="text-xs font-black text-[#004A98] uppercase tracking-[0.2em] bg-[#004A98]/5 px-3 py-1 rounded-md">Live Assessment • {session.question.type.replace('_', ' ')}</span>
           <div className="bg-red-50 text-red-600 px-4 py-1.5 rounded-xl text-sm font-black flex items-center gap-2 border border-red-100">
             <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-pulse shadow-sm shadow-red-600/50"></span>
-            {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+            {formatTime(timeLeft)}
           </div>
         </div>
 

@@ -203,6 +203,7 @@ const App: React.FC = () => {
       case 'STUDENT_POLL':
         return studentSession ? (
           <StudentPoll
+            key={studentSession.id}
             session={studentSession}
             onSubmit={handleStudentSubmit}
             onFinished={() => {
