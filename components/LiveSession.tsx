@@ -61,7 +61,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     }));
   }, [session, currentIdx, activeQ]);
 
-  const COLORS_PALETTE = ['#004A98', '#FACC15', '#64748b', '#94a3b8', '#cbd5e1'];
+  const COLORS_PALETTE = ['#004A98', '#FDB813', '#47528A', '#28336B', '#060E33'];
 
   const handleStartSession = async () => {
     const sessionRef = ref(db, 'active_session');
@@ -98,7 +98,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
       const contentWidth = pageWidth - (margin * 2);
 
       // -- Header --
-      doc.setFillColor(0, 74, 152);
+      doc.setFillColor(0, 74, 152); // UMak Blue #004A98
       doc.rect(0, 0, pageWidth, 40, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
@@ -113,7 +113,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
       let currentY = 55;
 
       // -- Title Section --
-      doc.setTextColor(0, 74, 152);
+      doc.setTextColor(1, 36, 78); // UMak Navy #01244E
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       const docTitle = session.questions?.[0]?.text || "Academic Session Report";
@@ -134,7 +134,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
 
           doc.setFillColor(248, 250, 252);
           doc.rect(margin - 2, currentY - 5, contentWidth + 4, 12, 'F');
-          doc.setTextColor(0, 74, 152);
+          doc.setTextColor(1, 36, 78);
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
           doc.text(`QUESTION ${idx + 1}: ${q.type.replace('_', ' ')}`, margin, currentY + 2);
@@ -187,10 +187,10 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
               doc.setTextColor(71, 85, 105);
               doc.text(`${opt} (${count})`, margin, currentY);
               currentY += 2;
-              doc.setFillColor(241, 245, 249);
+              doc.setFillColor(241, 245, 249); // Light grey background for progress bar
               doc.rect(margin, currentY, contentWidth, 2, 'F');
               if (pct > 0) {
-                doc.setFillColor(0, 74, 152);
+                doc.setFillColor(0, 74, 152); // UMak Blue #004A98 for progress
                 doc.rect(margin, currentY, (contentWidth * pct) / 100, 2, 'F');
               }
               currentY += 8;
@@ -236,14 +236,14 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 relative">
       {isSessionEnded && (
-        <div className="mb-8 p-6 bg-[#004A98] rounded-3xl text-white flex items-center justify-between shadow-xl shadow-[#004A98]/20 animate-in fade-in slide-in-from-top-4">
+        <div className="mb-8 p-6 bg-umak-blue rounded-3xl text-white flex items-center justify-between shadow-xl shadow-umak-blue/20 animate-in fade-in slide-in-from-top-4">
           <div>
-            <h3 className="text-2xl font-black uppercase tracking-tight">Assessment Concluded</h3>
+            <h3 className="text-2xl font-serif font-bold uppercase tracking-tight">Assessment Concluded</h3>
             <p className="text-blue-100 font-bold opacity-80">Official results are now ready for archiving.</p>
           </div>
           <button
             onClick={handlePrintPDF}
-            className="bg-[#FACC15] text-[#004A98] px-8 py-4 rounded-xl font-black uppercase text-sm tracking-widest shadow-lg hover:scale-105 transition-all flex items-center gap-3"
+            className="bg-umak-yellow text-umak-navy px-8 py-4 rounded-xl font-black uppercase text-sm tracking-widest shadow-lg hover:scale-105 transition-all flex items-center gap-3"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -260,12 +260,12 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1 pr-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-black text-[#004A98] uppercase tracking-widest block">
+                  <span className="text-xs font-extrabold text-umak-blue uppercase tracking-widest block">
                     {isSessionEnded ? 'COMPLETED ASSESSMENT' : `Question ${currentIdx + 1} of ${session.questions.length}`}
                   </span>
                   {!isSessionEnded && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 leading-tight">
+                <h2 className="text-3xl font-serif font-bold text-umak-navy leading-tight">
                   {session.status === 'waiting' ? (
                     <span className="text-slate-300 italic flex items-center gap-3">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -277,8 +277,8 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 </h2>
               </div>
               <div className="text-right">
-                <span className="text-sm font-bold text-slate-500 block">Access Code</span>
-                <div className="text-4xl font-black text-[#004A98] tracking-widest">{session.accessCode}</div>
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1">Access Code</span>
+                <div className="text-4xl font-black text-umak-blue tracking-widest">{session.accessCode}</div>
               </div>
             </div>
 
@@ -289,9 +289,9 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                   {isSessionEnded ? 'Ended' : `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`}
                 </span>
               </div>
-              <div className="bg-white border-2 border-[#004A98]/10 rounded-xl p-6 flex flex-col items-center justify-center">
-                <span className="text-xs font-black text-[#004A98]/70 uppercase mb-2">Total Participants</span>
-                <span className="text-5xl font-black text-[#004A98]">{session.participantsCount}</span>
+              <div className="bg-white border-2 border-umak-blue/10 rounded-xl p-6 flex flex-col items-center justify-center">
+                <span className="text-xs font-black text-umak-blue/70 uppercase mb-2">Total Participants</span>
+                <span className="text-5xl font-black text-umak-blue">{session.participantsCount}</span>
               </div>
             </div>
 
@@ -300,7 +300,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 {session.status === 'waiting' ? (
                   <button
                     onClick={handleStartSession}
-                    className="flex-1 bg-[#004A98] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-[#004A98]/20 hover:bg-[#003875] transition-all"
+                    className="flex-1 bg-umak-blue text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-umak-blue/20 hover:bg-umak-navy transition-all"
                   >
                     Launch Assessment Now
                   </button>
@@ -318,7 +318,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                     {currentIdx < session.questions.length - 1 && (
                       <button
                         onClick={handleNextQuestion}
-                        className="flex-1 bg-[#FACC15] text-[#004A98] py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-yellow-400 transition-all border-2 border-yellow-300"
+                        className="flex-1 bg-umak-yellow text-umak-navy py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-yellow-400 transition-all border-2 border-yellow-300"
                       >
                         Next Question
                       </button>
@@ -387,12 +387,12 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 return (
                   <div key={i}>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="font-black text-slate-800">{opt}</span>
-                      <span className="font-black text-[#004A98]">{count} {label} ({pct}%)</span>
+                      <span className="font-extrabold text-slate-800">{opt}</span>
+                      <span className="font-black text-umak-blue">{count} {label} ({pct}%)</span>
                     </div>
                     <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
                       <div
-                        className="bg-[#004A98] h-full transition-all duration-700 ease-out"
+                        className="bg-umak-blue h-full transition-all duration-700 ease-out"
                         style={{ width: `${pct}%` }}
                       ></div>
                     </div>
@@ -406,7 +406,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="font-black text-slate-900 text-lg uppercase tracking-wide">Open Responses (Q{currentIdx + 1})</h3>
-                <div className="text-[10px] font-black text-[#004A98] uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">
+                <div className="text-[10px] font-black text-umak-blue uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">
                   {(session.allResponses && session.allResponses[currentIdx]?.text?.length) || 0} Submissions
                 </div>
               </div>
@@ -449,9 +449,9 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 }}
               />
             </div>
-            <h3 className="font-black text-[#004A98] mb-1 text-lg uppercase tracking-tight">Access QR Code</h3>
+            <h3 className="font-serif font-bold text-umak-navy mb-1 text-lg uppercase tracking-tight">Access QR Code</h3>
             <p className="text-[10px] font-black text-slate-400 mb-6 uppercase tracking-[0.2em]">Scan to participate</p>
-            <div className="bg-slate-900 py-3 px-6 rounded-lg text-[11px] font-black text-[#FACC15] mb-8 w-full shadow-lg truncate">
+            <div className="bg-umak-navy py-3 px-6 rounded-lg text-[11px] font-black text-umak-yellow mb-8 w-full shadow-lg truncate">
               {window.location.host}/?access={session.accessCode}
             </div>
           </div>
@@ -491,7 +491,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             <div className="flex flex-col gap-4">
               <button
                 onClick={handlePrintPDF}
-                className="w-full bg-[#004A98] text-white py-4 rounded-xl font-black shadow-lg shadow-[#004A98]/20 transition-all flex items-center justify-center gap-3 uppercase text-[10px] tracking-widest"
+                className="w-full bg-umak-blue text-white py-4 rounded-xl font-black shadow-lg shadow-umak-blue/20 transition-all flex items-center justify-center gap-3 uppercase text-[10px] tracking-widest"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />

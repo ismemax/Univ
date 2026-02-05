@@ -91,7 +91,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
               <div key={q.id} className="group relative">
                 <button
                   onClick={() => setActiveIndex(idx)}
-                  className={`w-full text-left p-3 rounded-xl text-xs font-black transition-all flex items-center gap-3 ${activeIndex === idx ? 'bg-[#004A98] text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                  className={`w-full text-left p-3 rounded-xl text-xs font-black transition-all flex items-center gap-3 ${activeIndex === idx ? 'bg-umak-blue text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                 >
                   <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] ${activeIndex === idx ? 'bg-white/20' : 'bg-slate-200'}`}>
                     {idx + 1}
@@ -111,22 +111,22 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
           </div>
           <button
             onClick={handleAddQuestion}
-            className="w-full mt-4 p-3 border-2 border-dashed border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-[#004A98] hover:text-[#004A98] transition-all"
+            className="w-full mt-4 p-3 border-2 border-dashed border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-umak-blue hover:text-umak-blue transition-all"
           >
             + Add Question
           </button>
         </div>
 
         <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100">
-          <h4 className="text-[10px] font-black text-[#004A98] uppercase tracking-widest mb-2">Global Settings</h4>
+          <h4 className="text-[10px] font-black text-umak-blue uppercase tracking-widest mb-2">Global Settings</h4>
           <div className="space-y-4">
             <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={preventMultiple} onChange={() => setPreventMultiple(!preventMultiple)} className="accent-[#004A98] w-4 h-4" />
-              <span className="text-[10px] font-bold text-slate-600 uppercase">One Response Limit</span>
+              <input type="checkbox" checked={preventMultiple} onChange={() => setPreventMultiple(!preventMultiple)} className="accent-umak-blue w-4 h-4" />
+              <span className="text-[10px] font-extrabold text-slate-600 uppercase">One Response Limit</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={hasLobby} onChange={() => setHasLobby(!hasLobby)} className="accent-[#004A98] w-4 h-4" />
-              <span className="text-[10px] font-bold text-slate-600 uppercase">Join Lobby</span>
+              <input type="checkbox" checked={hasLobby} onChange={() => setHasLobby(!hasLobby)} className="accent-umak-blue w-4 h-4" />
+              <span className="text-[10px] font-extrabold text-slate-600 uppercase">Join Lobby</span>
             </label>
           </div>
         </div>
@@ -136,14 +136,14 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
       <div className="flex-grow bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-4">
-            <button onClick={onCancel} className="text-slate-400 hover:text-[#004A98] transition-colors p-2 -ml-2">
+            <button onClick={onCancel} className="text-slate-400 hover:text-umak-blue transition-colors p-2 -ml-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
             </button>
             <div>
-              <span className="text-[10px] font-black text-[#004A98] uppercase tracking-widest mb-1 block">UMAK ACADEMIC PORTAL</span>
-              <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">
+              <span className="text-[10px] font-extrabold text-umak-blue uppercase tracking-widest mb-1 block">UMAK ACADEMIC PORTAL</span>
+              <h2 className="text-3xl font-serif font-bold text-umak-navy uppercase tracking-tight">
                 {initialData ? 'Edit Assessment' : 'New Assessment'}
               </h2>
             </div>
@@ -160,7 +160,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
               value={activeQ.text}
               onChange={(e) => updateActiveQuestion({ text: e.target.value })}
               placeholder="e.g., Define the role of University of Makati in community development."
-              className="w-full bg-white border-2 border-slate-200 rounded-xl p-6 h-32 focus:outline-none focus:ring-4 focus:ring-[#004A98]/10 focus:border-[#004A98] transition-all text-lg font-black text-slate-900 placeholder:font-bold placeholder:text-slate-300"
+              className="w-full bg-white border-2 border-slate-100 rounded-xl p-6 h-32 focus:outline-none focus:ring-4 focus:ring-umak-blue/10 focus:border-umak-blue transition-all text-xl font-bold text-slate-900 placeholder:font-bold placeholder:text-slate-300 shadow-inner"
             />
           </div>
 
@@ -172,8 +172,8 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
                   key={t}
                   onClick={() => updateActiveQuestion({ type: QuestionType[t] })}
                   className={`py-4 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 transition-all shadow-sm ${activeQ.type === QuestionType[t]
-                    ? 'bg-[#004A98] text-white border-[#004A98] shadow-lg shadow-[#004A98]/20'
-                    : 'bg-white text-slate-500 border-slate-200 hover:border-[#004A98]/40'
+                    ? 'bg-umak-blue text-white border-umak-blue shadow-lg shadow-umak-blue/20'
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-umak-blue/40'
                     }`}
                 >
                   {t.replace('_', ' ')}
@@ -204,7 +204,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
                     How Ranking Works
                   </p>
                   <p className="text-[11px] text-slate-600 font-bold leading-relaxed">
-                    Final results will use <span className="text-[#004A98]">Weighted Priority Scoring</span>. Items ranked 1st by students receive maximum weight, while lower-ranked items get progressively fewer points. The "Priority Score" tracks collegiate consensus.
+                    Final results will use <span className="text-umak-blue">Weighted Priority Scoring</span>. Items ranked 1st by students receive maximum weight, while lower-ranked items get progressively fewer points. The "Priority Score" tracks collegiate consensus.
                   </p>
                 </div>
               )}
@@ -212,7 +212,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
               <div className="grid gap-4">
                 {activeQ.options.map((opt, i) => (
                   <div key={i} className="flex gap-4 animate-in fade-in slide-in-from-left-2">
-                    <div className="w-12 h-12 bg-[#FACC15] rounded-xl flex items-center justify-center text-[#004A98] font-black flex-shrink-0 text-lg shadow-sm">
+                    <div className="w-12 h-12 bg-umak-yellow rounded-xl flex items-center justify-center text-umak-navy font-black flex-shrink-0 text-lg shadow-sm border border-umak-yellow/20">
                       {activeQ.type === QuestionType.RANKING ? i + 1 : String.fromCharCode(65 + i)}
                     </div>
                     <input
@@ -244,7 +244,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
               </div>
               <button
                 onClick={() => updateActiveQuestion({ options: [...activeQ.options, ''] })}
-                className="flex items-center gap-2 text-[#004A98] text-[10px] font-black uppercase tracking-widest hover:bg-[#004A98]/10 px-4 py-3 rounded-xl transition-all ml-1 mt-4 border-2 border-dashed border-[#004A98]/30"
+                className="flex items-center gap-2 text-umak-blue text-[10px] font-black uppercase tracking-widest hover:bg-umak-blue/10 px-4 py-3 rounded-xl transition-all ml-1 mt-4 border-2 border-dashed border-umak-blue/30"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -264,9 +264,9 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
                 step="30"
                 value={activeQ.timeLimit}
                 onChange={(e) => updateActiveQuestion({ timeLimit: Number(e.target.value) })}
-                className="flex-grow h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#004A98]"
+                className="flex-grow h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-umak-blue"
               />
-              <span className="w-20 text-center font-black text-2xl text-[#004A98] bg-white border-2 border-[#004A98]/20 py-2 rounded-xl shadow-sm">{activeQ.timeLimit}s</span>
+              <span className="w-20 text-center font-black text-2xl text-umak-blue bg-white border-2 border-umak-blue/20 py-2 rounded-xl shadow-sm">{activeQ.timeLimit}s</span>
             </div>
           </div>
 
@@ -279,7 +279,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
             </button>
             <button
               onClick={() => { if (validate()) onCreate(getFinalAssessment(false)); }}
-              className="flex-2 bg-[#004A98] text-white font-black py-5 px-14 rounded-2xl hover:bg-[#003875] transition-all shadow-xl shadow-[#004A98]/30 uppercase text-xs tracking-widest"
+              className="flex-2 bg-umak-blue text-white font-black py-5 px-14 rounded-2xl hover:bg-umak-navy transition-all shadow-xl shadow-umak-blue/30 uppercase text-xs tracking-widest"
             >
               Launch Academic Session
             </button>

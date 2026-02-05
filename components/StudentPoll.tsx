@@ -96,8 +96,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                 key={i}
                 onClick={() => setSelectedOption(i)}
                 className={`w-full text-left p-5 rounded-2xl border-2 transition-all font-black flex items-center justify-between text-lg shadow-sm ${selectedOption === i
-                  ? 'border-[#004A98] bg-[#004A98]/10 text-[#004A98]'
-                  : 'border-slate-200 hover:border-[#004A98]/40 text-slate-700 bg-white'
+                  ? 'border-umak-blue bg-umak-blue/10 text-umak-blue'
+                  : 'border-slate-200 hover:border-umak-blue/40 text-slate-700 bg-white'
                   }`}
               >
                 <span>{opt}</span>
@@ -115,7 +115,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           <input
             type="text"
             placeholder="Type your response here..."
-            className="w-full bg-white border-2 border-slate-200 rounded-2xl p-5 text-xl font-black text-slate-900 focus:outline-none focus:border-[#004A98] focus:ring-4 focus:ring-[#004A98]/5 transition-all placeholder:text-slate-300"
+            className="w-full bg-white border-2 border-slate-200 rounded-2xl p-5 text-xl font-black text-slate-900 focus:outline-none focus:border-umak-blue focus:ring-4 focus:ring-umak-blue/5 transition-all placeholder:text-slate-300"
             onChange={(e) => setSelectedOption(e.target.value)}
           />
         );
@@ -123,7 +123,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
         return (
           <textarea
             placeholder="Type your comprehensive response here..."
-            className="w-full bg-white border-2 border-slate-200 rounded-2xl p-6 h-60 text-xl font-black text-slate-900 focus:outline-none focus:border-[#004A98] focus:ring-4 focus:ring-[#004A98]/5 transition-all placeholder:text-slate-300"
+            className="w-full bg-white border-2 border-slate-200 rounded-2xl p-6 h-60 text-xl font-black text-slate-900 focus:outline-none focus:border-umak-blue focus:ring-4 focus:ring-umak-blue/5 transition-all placeholder:text-slate-300"
             onChange={(e) => setSelectedOption(e.target.value)}
           />
         );
@@ -143,15 +143,15 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           <div className="space-y-8">
             {/* Stage 1: Current Ranking */}
             {ranking.length > 0 && (
-              <div className="bg-[#004A98]/5 border-2 border-dashed border-[#004A98]/20 rounded-[32px] p-6 animate-in slide-in-from-top-4">
+              <div className="bg-umak-blue/5 border-2 border-dashed border-umak-blue/20 rounded-[32px] p-6 animate-in slide-in-from-top-4">
                 <div className="flex justify-between items-center mb-6 px-2">
-                  <h4 className="text-[10px] font-black text-[#004A98] uppercase tracking-widest">Your Priority Order</h4>
+                  <h4 className="text-[10px] font-black text-umak-blue uppercase tracking-widest">Your Priority Order</h4>
                   <button onClick={() => setSelectedOption([])} className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline">Reset All</button>
                 </div>
                 <div className="space-y-3">
                   {ranking.map((optIdx, rank) => (
-                    <div key={`ranked-${optIdx}`} className="bg-white border-2 border-[#004A98] p-4 rounded-2xl flex items-center gap-4 shadow-sm animate-in fade-in zoom-in-95">
-                      <div className="w-8 h-8 bg-[#004A98] text-white rounded-lg flex items-center justify-center font-black text-sm">
+                    <div key={`ranked-${optIdx}`} className="bg-white border-2 border-umak-blue p-4 rounded-2xl flex items-center gap-4 shadow-sm animate-in fade-in zoom-in-95">
+                      <div className="w-8 h-8 bg-umak-blue text-white rounded-lg flex items-center justify-center font-black text-sm">
                         {rank + 1}
                       </div>
                       <span className="flex-grow font-black text-slate-800 text-sm">{activeQ.options[optIdx]}</span>
@@ -178,11 +178,11 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                   <button
                     key={`available-${idx}`}
                     onClick={() => handleAdd(idx)}
-                    className="w-full text-left p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-[#004A98]/40 hover:bg-slate-50 transition-all font-black flex items-center justify-between text-lg group shadow-sm"
+                    className="w-full text-left p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-umak-blue/40 hover:bg-slate-50 transition-all font-black flex items-center justify-between text-lg group shadow-sm"
                   >
-                    <span className="text-slate-700 group-hover:text-[#004A98]">{activeQ.options[idx]}</span>
-                    <div className="w-8 h-8 rounded-full border-2 border-slate-100 flex items-center justify-center group-hover:bg-[#004A98]/10 group-hover:border-[#004A98]/20 transition-all">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-200 group-hover:text-[#004A98]" viewBox="0 0 20 20" fill="currentColor">
+                    <span className="text-slate-700 group-hover:text-umak-blue">{activeQ.options[idx]}</span>
+                    <div className="w-8 h-8 rounded-full border-2 border-slate-100 flex items-center justify-center group-hover:bg-umak-blue/10 group-hover:border-umak-blue/20 transition-all">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-200 group-hover:text-umak-blue" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -195,7 +195,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
               <div className="pt-4 flex items-center justify-center gap-2">
                 <div className="flex gap-1">
                   {[...Array(activeQ.options.length)].map((_, i) => (
-                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i < ranking.length ? 'bg-[#004A98] w-4' : 'bg-slate-200'}`}></div>
+                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i < ranking.length ? 'bg-umak-blue w-4' : 'bg-slate-200'}`}></div>
                   ))}
                 </div>
               </div>
@@ -211,7 +211,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   if (!session || !activeQ) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse font-black text-[#004A98] uppercase tracking-widest text-xs">Authenticating Session...</div>
+        <div className="animate-pulse font-black text-umak-blue uppercase tracking-widest text-xs">Authenticating Session...</div>
       </div>
     );
   }
@@ -221,15 +221,15 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
       <div className="max-w-xl mx-auto px-6 py-20 text-center">
         <div className="bg-white border-2 border-slate-200 rounded-3xl p-10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
-            <div className="bg-[#004A98] h-full w-1/3 animate-[loading_2s_infinite]"></div>
+            <div className="bg-umak-blue h-full w-1/3 animate-[loading_2s_infinite]"></div>
           </div>
           <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8 relative">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[#004A98]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-umak-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
           </div>
-          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Connected</h2>
+          <h2 className="text-3xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Connected</h2>
           <p className="text-slate-600 font-bold mb-10 text-lg">You have successfully joined the session. Please wait for the instructor to start the assessment.</p>
         </div>
       </div>
@@ -245,7 +245,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Time Expired</h2>
+          <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4 uppercase tracking-tight">Time Expired</h2>
           <p className="text-slate-600 font-bold mb-10 text-lg">The response window for this question has ended. Please wait for the next question.</p>
           <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waiting for next phase...</div>
         </div>
@@ -257,11 +257,11 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     <div className="max-w-xl mx-auto px-6 py-12">
       <div className="bg-white border-2 border-slate-200 rounded-[40px] shadow-2xl p-10 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-2 bg-slate-100">
-          <div className="bg-[#FACC15] h-full transition-all duration-1000 ease-linear shadow-sm" style={{ width: `${(timeLeft / activeQ.timeLimit) * 100}%` }}></div>
+          <div className="bg-umak-yellow h-full transition-all duration-1000 ease-linear shadow-sm" style={{ width: `${(timeLeft / activeQ.timeLimit) * 100}%` }}></div>
         </div>
 
         <div className="flex justify-between items-center mb-12 mt-4">
-          <span className="text-xs font-black text-[#004A98] uppercase tracking-[0.2em] bg-[#004A98]/5 px-3 py-1 rounded-md">
+          <span className="text-xs font-black text-umak-blue uppercase tracking-[0.2em] bg-umak-blue/5 px-3 py-1 rounded-md">
             {session.status === 'waiting' ? 'LOBBY' : `QUESTION ${currentIdx + 1} OF ${session.questions.length}`}
           </span>
           <div className="bg-red-50 text-red-600 px-4 py-1.5 rounded-xl text-sm font-black flex items-center gap-2 border border-red-100">
@@ -270,7 +270,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           </div>
         </div>
 
-        <h2 className="text-3xl font-black text-slate-900 mb-12 leading-tight tracking-tight">
+        <h2 className="text-3xl font-serif font-bold text-umak-navy mb-12 leading-tight tracking-tight">
           {session.status === 'waiting' ? (
             <span className="text-slate-300 italic flex items-center gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -286,7 +286,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
             {renderInput()}
             <button
               onClick={handleSubmit}
-              className="w-full bg-[#004A98] text-white py-5 rounded-2xl font-black mt-8 shadow-xl shadow-[#004A98]/30 transition-all active:scale-[0.98] uppercase tracking-widest text-lg"
+              className="w-full bg-umak-blue text-white py-5 rounded-2xl font-black mt-8 shadow-xl shadow-umak-blue/30 transition-all active:scale-[0.98] uppercase tracking-widest text-lg"
             >
               Submit Response
             </button>
@@ -304,7 +304,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                 </svg>
               )}
             </div>
-            <h3 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">
+            <h3 className="text-3xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">
               {alreadyVoted ? 'Access Restricted' : 'Response Confirmed'}
             </h3>
             <p className="text-slate-600 font-bold mb-12 text-lg leading-relaxed">

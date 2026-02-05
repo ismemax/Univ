@@ -9,11 +9,43 @@
     content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https: wss:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https:; frame-ancestors 'none'; form-action 'self';">
   <title>UMak Academic Questionnaire System</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            umak: {
+              blue: '#004A98',
+              navy: '#01244E',
+              yellow: '#FDB813',
+              gold: '#FACC15',
+              space: {
+                100: '#47528A',
+                200: '#28336B',
+                300: '#060E33',
+                400: '#01061C',
+              }
+            }
+          },
+          fontFamily: {
+            serif: ['Marcellus', 'serif'],
+            sans: ['Montserrat', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Montserrat', sans-serif;
       background-color: #ffffff;
+    }
+
+    .font-marcellus {
+      font-family: 'Marcellus', serif;
     }
 
     .umak-blue {
@@ -29,11 +61,11 @@
     }
 
     .umak-yellow {
-      color: #FACC15;
+      color: #FDB813;
     }
 
     .bg-umak-yellow {
-      background-color: #FACC15;
+      background-color: #FDB813;
     }
   </style>
   <script type="importmap">
