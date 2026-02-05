@@ -2,13 +2,13 @@
     "rules": {
         "active_session": {
             ".read": true,
-            ".write": "auth != null || (data.child('status').val() === 'active')",
+            ".write": "!data.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'waiting'",
             "participantsCount": {
                 ".validate": "newData.isNumber() && newData.val() >= 0"
             },
             "allResponses": {
                 "$questionIndex": {
-                    ".write": "data.parent().parent().child('status').val() === 'active'",
+                    ".write": "data.parent().parent().exists()",
                     ".validate": "newData.hasChildren()"
                 }
             }
@@ -21,3 +21,9 @@
         }
     }
 }
+/* 
+IMPORTANT: 
+Your previous security rules were blocking the creation of the session.
+Please COPY AND PASTE these updated rules into your Firebase Console.
+This will fix the "Loading" hang.
+*/

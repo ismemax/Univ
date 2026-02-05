@@ -238,37 +238,19 @@ const App: React.FC = () => {
           onCancel={() => setView('FACULTY_DASHBOARD')}
         />;
       case 'FACULTY_LIVE':
-        if (!activeSession) {
-          return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-              <div className="flex flex-col items-center gap-6 p-10 bg-white rounded-[40px] shadow-2xl border-2 border-slate-100 max-w-sm text-center">
-                <div className="relative">
-                  <div className="w-16 h-16 border-4 border-slate-100 rounded-full"></div>
-                  <div className="w-16 h-16 border-4 border-[#004A98] border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-slate-900 font-black uppercase tracking-tight text-xl">Connecting Session</p>
-                  <p className="text-slate-400 font-bold text-sm">Synchronizing academic data with UMak servers...</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setActiveSession(null);
-                    setView('FACULTY_DASHBOARD');
-                  }}
-                  className="mt-4 px-8 py-3 bg-slate-100 text-slate-500 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all border border-slate-200"
-                >
-                  Cancel & Return to Dashboard
-                </button>
-              </div>
-            </div>
-          );
-        }
-        return (
+        return activeSession ? (
           <LiveSession session={activeSession} onEnd={() => {
             set(ref(db, 'active_session'), null);
             setActiveSession(null);
             setView('FACULTY_DASHBOARD');
           }} />
+        ) : (
+          <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#004A98] border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Re-establishing Session...</p>
+            </div>
+          </div>
         );
       case 'STUDENT_POLL':
         if (!studentSession) return <Home setView={setView} onJoin={handleJoinSession} />;
