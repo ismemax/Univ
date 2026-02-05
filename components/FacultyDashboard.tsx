@@ -14,14 +14,28 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
   const [assessments, setAssessments] = useState<Assessment[]>([]);
 
   useEffect(() => {
-    const db = JSON.parse(localStorage.getItem(STORAGE_KEYS.QUESTIONS) || '[]');
-    setAssessments([...db].reverse());
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.QUESTIONS);
+      const db = JSON.parse(raw || '[]');
+      if (Array.isArray(db)) {
+        setAssessments([...db].reverse());
+      } else {
+        setAssessments([]);
+      }
+    } catch (e) {
+      console.error("Failed to load assessments:", e);
+      setAssessments([]);
+    }
   }, []);
 
   const deleteAssessment = (id: string) => {
-    const updated = assessments.filter(a => a.id !== id);
-    localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updated));
-    setAssessments(updated);
+    try {
+      const updated = assessments.filter(a => a.id !== id);
+      localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updated));
+      setAssessments(updated);
+    } catch (e) {
+      console.error("Failed to delete assessment:", e);
+    }
   };
 
   return (
