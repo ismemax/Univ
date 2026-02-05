@@ -1,0 +1,23 @@
+{
+    "rules": {
+        "active_session": {
+            ".read": true,
+            ".write": "auth != null || (data.child('status').val() === 'active')",
+            "participantsCount": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "allResponses": {
+                "$questionIndex": {
+                    ".write": "data.parent().parent().child('status').val() === 'active'",
+                    ".validate": "newData.hasChildren()"
+                }
+            }
+        },
+        "users": {
+            "$uid": {
+                ".read": "$uid === auth.uid",
+                ".write": "$uid === auth.uid"
+            }
+        }
+    }
+}

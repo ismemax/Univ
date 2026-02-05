@@ -150,6 +150,13 @@ const App: React.FC = () => {
       if (!session || session.status !== 'active') return;
 
       const qIdx = session.currentQuestionIndex || 0;
+
+      // 1. Session Integrity Check (Defensive)
+      const { validateSessionIntegrity, sanitizeInput } = await import('./utils/securityUtils');
+      if (!validateSessionIntegrity(session.id)) {
+        throw new Error("Security Violation: Session fingerprint mismatch.");
+      }
+
       const updates: any = {};
       updates['participantsCount'] = (session.participantsCount || 0) + 1;
 
@@ -161,7 +168,9 @@ const App: React.FC = () => {
         updates[`allResponses/${qIdx}/rankings`] = [...currentRankings, responseIndex];
       } else {
         const currentTexts = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].text) || [];
-        updates[`allResponses/${qIdx}/text`] = [...currentTexts, responseIndex];
+        // Apply strict sanitization to all text responses
+        const sanitizedResponse = sanitizeInput(responseIndex);
+        updates[`allResponses/${qIdx}/text`] = [...currentTexts, sanitizedResponse];
       }
 
       await update(sessionRef, updates);
@@ -170,8 +179,14 @@ const App: React.FC = () => {
     }
   };
 
-  const handleJoinSession = async (code: string) => {
+  const handleJoinSession = async (code: string, honeypotValue = '') => {
     const normalizedCode = code.trim().toUpperCase();
+
+    // Antigravity Honeypot Check
+    if (honeypotValue) {
+      secureLog("Bot detected via honeymoon field.");
+      return;
+    }
 
     try {
       const snapshot = await get(ref(db, 'active_session'));
@@ -182,6 +197,9 @@ const App: React.FC = () => {
           if (session.status === 'ended') {
             alert('Session Ended: This session has already concluded.');
           } else {
+            // Initialize fingerprint on join
+            const { validateSessionIntegrity } = await import('./utils/securityUtils');
+            validateSessionIntegrity(session.id);
             setStudentSession(session);
             setView('STUDENT_POLL');
           }

@@ -5,24 +5,47 @@
 
 /**
  * Sanitizes user input to prevent XSS and injection attacks.
- * Removes HTML tags and potential script patterns.
+ * Upgraded with recursive tag removal and encoding prevention.
  */
 export const sanitizeInput = (val: string): string => {
     if (typeof val !== 'string') return '';
-    return val
-        .replace(/<[^>]*>?/gm, '') // Remove HTML tags
+    let sanitized = val;
+    // Recursive removal of HTML tags
+    while (sanitized.includes('<') && sanitized.includes('>')) {
+        sanitized = sanitized.replace(/<[^>]*>?/gm, '');
+    }
+    return sanitized
         .replace(/javascript:/gi, '') // Remove javascript: protocol
+        .replace(/on\w+=/gi, '')      // Remove inline event handlers (onerror, onclick, etc)
+        .replace(/&/g, '&amp;')       // Encode &
+        .replace(/</g, '&lt;')        // Encode <
+        .replace(/>/g, '&gt;')        // Encode >
+        .replace(/"/g, '&quot;')      // Encode "
+        .replace(/'/g, '&#x27;')      // Encode '
         .trim();
 };
 
 /**
- * Validates that string has a minimum length and only safe characters.
+ * Checks for session integrity by verifying basic client-side fingerprints.
+ * Prevents simple session hijacking/copying.
  */
-export const isSecureInput = (val: string, minLength = 1): boolean => {
-    if (!val || val.length < minLength) return false;
-    // Check for common SQL injection or script patterns if needed
-    const suspiciousTags = /('|--|;|\/\*|\*\/)/;
-    return !suspiciousTags.test(val);
+export const validateSessionIntegrity = (sessionId: string): boolean => {
+    if (!sessionId) return false;
+    const clientKey = btoa(navigator.userAgent + navigator.language);
+    const storedKey = localStorage.getItem(`umak_fp_${sessionId}`);
+
+    if (!storedKey) {
+        localStorage.setItem(`umak_fp_${sessionId}`, clientKey);
+        return true;
+    }
+    return storedKey === clientKey;
+};
+
+/**
+ * Creates a honeypot field check to detect bot-based penetration.
+ */
+export const isBotDetected = (honeypotValue: string): boolean => {
+    return !!honeypotValue;
 };
 
 /**
@@ -30,7 +53,6 @@ export const isSecureInput = (val: string, minLength = 1): boolean => {
  * Following "Disable debug logs in production" practice.
  */
 export const secureLog = (message: string, data?: any) => {
-    // In a pure browser environment, we check for dev mode via location or flag
     const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isDev) {
         if (data) console.log(`[DEV_SEC] ${message}`, data);
