@@ -29,10 +29,8 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onLogin, onDashboa
 
       <nav className="hidden lg:flex items-center gap-8 text-slate-500 font-semibold text-sm">
         <button onClick={onHome} className="hover:text-umak-blue transition-colors">Home</button>
-        {currentUser?.role === 'FACULTY' && (
-          <button onClick={onDashboard} className="hover:text-umak-blue transition-colors">Faculty Dashboard</button>
-        )}
-        <a href="#" className="hover:text-umak-blue transition-colors">University Docs</a>
+        <button onClick={onDashboard} className="hover:text-umak-blue transition-colors">Questionnaires</button>
+        <a href="#" className="hover:text-umak-blue transition-colors">Academic Calendar</a>
         <a href="#" className="hover:text-umak-blue transition-colors">Support</a>
       </nav>
 
