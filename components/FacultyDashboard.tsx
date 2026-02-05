@@ -68,53 +68,58 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
             <p className="text-slate-500 text-xs mt-1 font-medium">Ready to create your first academic questionnaire?</p>
           </div>
         ) : (
-          assessments.map((a) => (
-            <div key={a.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex gap-2">
-                  <span className="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-blue-50 text-umak-blue">
-                    {a.questions.length} Question{a.questions.length > 1 ? 's' : ''}
-                  </span>
-                  {a.isDraft && (
-                    <span className="bg-umak-yellow text-umak-navy px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">
-                      Draft
+          assessments.map((a) => {
+            if (!a || !a.id) return null;
+            return (
+              <div key={a.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex gap-2">
+                    <span className="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-blue-50 text-umak-blue">
+                      {(a.questions || []).length} Question{(a.questions || []).length !== 1 ? 's' : ''}
                     </span>
-                  )}
+                    {a.isDraft && (
+                      <span className="bg-umak-yellow text-umak-navy px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">
+                        Draft
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400">
+                    {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : 'No Date'}
+                  </span>
                 </div>
-                <span className="text-[9px] font-black text-slate-400">{new Date(a.createdAt).toLocaleDateString()}</span>
-              </div>
 
-              <h4 className="text-lg font-black text-slate-900 mb-2 line-clamp-2 min-h-[3.5rem] leading-tight">{a.title}</h4>
-              <p className="text-xs text-slate-400 font-bold mb-6 italic truncate">{a.questions[0]?.text}</p>
+                <h4 className="text-lg font-black text-slate-900 mb-2 line-clamp-2 min-h-[3.5rem] leading-tight">{a.title || 'Untitled Assessment'}</h4>
+                <p className="text-xs text-slate-400 font-bold mb-6 italic truncate">{a.questions?.[0]?.text || 'No questions yet'}</p>
 
-              <div className="flex items-center gap-3 mt-auto">
-                {a.isDraft ? (
+                <div className="flex items-center gap-3 mt-auto">
+                  {a.isDraft ? (
+                    <button
+                      onClick={() => onEditDraft(a)}
+                      className="flex-1 bg-white border border-umak-blue text-umak-blue hover:bg-umak-blue hover:text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider"
+                    >
+                      Edit Draft
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onStartSession(a)}
+                      className="flex-1 bg-umak-blue text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider shadow-sm hover:shadow-md"
+                    >
+                      Launch Live
+                    </button>
+                  )}
                   <button
-                    onClick={() => onEditDraft(a)}
-                    className="flex-1 bg-white border border-umak-blue text-umak-blue hover:bg-umak-blue hover:text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider"
+                    onClick={() => deleteAssessment(a.id)}
+                    className="p-2.5 text-slate-400 hover:text-red-500 transition-colors"
+                    title="Delete"
                   >
-                    Edit Draft
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
                   </button>
-                ) : (
-                  <button
-                    onClick={() => onStartSession(a)}
-                    className="flex-1 bg-umak-blue text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider shadow-sm hover:shadow-md"
-                  >
-                    Launch Live
-                  </button>
-                )}
-                <button
-                  onClick={() => deleteAssessment(a.id)}
-                  className="p-2.5 text-slate-400 hover:text-red-500 transition-colors"
-                  title="Delete"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -8,6 +8,7 @@ import FacultyDashboard from './components/FacultyDashboard';
 import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
 import StudentPoll from './components/StudentPoll';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import { Icons, STORAGE_KEYS } from './constants';
 import { db, ref, onValue, set, update, get } from './firebase';
@@ -229,76 +230,101 @@ const App: React.FC = () => {
   };
 
   const renderView = () => {
-    switch (view) {
-      case 'HOME':
-        return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
-      case 'FACULTY_DASHBOARD':
-        if (currentUser?.role === 'FACULTY') {
+    try {
+      switch (view) {
+        case 'HOME':
+          return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
+        case 'FACULTY_DASHBOARD':
+          if (currentUser && currentUser.role === 'FACULTY') {
+            return (
+              <FacultyDashboard
+                user={currentUser}
+                onCreateNew={() => { setEditingAssessment(null); setView('FACULTY_CREATE'); }}
+                onStartSession={handleCreateSession}
+                onEditDraft={(a: Assessment) => { setEditingAssessment(a); setView('FACULTY_EDIT'); }}
+              />
+            );
+          }
+          // If we're here but role isn't set yet, the state update is pending.
+          // Return a loader to prevent a blank screen.
           return (
-            <FacultyDashboard
-              user={currentUser}
-              onCreateNew={() => { setEditingAssessment(null); setView('FACULTY_CREATE'); }}
-              onStartSession={handleCreateSession}
-              onEditDraft={(a: Assessment) => { setEditingAssessment(a); setView('FACULTY_EDIT'); }}
+            <div className="min-h-[50vh] flex flex-col items-center justify-center">
+              <div className="w-10 h-10 border-4 border-umak-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Authorizing Faculty Access...</p>
+            </div>
+          );
+        case 'FACULTY_CREATE':
+        case 'FACULTY_EDIT':
+          return <QuestionnaireCreator
+            initialData={editingAssessment || undefined}
+            onCreate={handleCreateSession}
+            onSaveDraft={handleSaveDraft}
+            onCancel={() => setView('FACULTY_DASHBOARD')}
+          />;
+        case 'FACULTY_LIVE':
+          return activeSession ? (
+            <LiveSession session={activeSession} onEnd={() => {
+              set(ref(db, 'active_session'), null);
+              setActiveSession(null);
+              setView('FACULTY_DASHBOARD');
+            }} />
+          ) : (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-[#004A98] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Re-establishing Session...</p>
+              </div>
+            </div>
+          );
+        case 'STUDENT_POLL':
+          if (!studentSession) return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
+          return (
+            <StudentPoll
+              key={studentSession.id}
+              session={studentSession}
+              onSubmit={handleStudentSubmit}
+              onFinished={() => {
+                setStudentSession(null);
+                setView('HOME');
+              }}
             />
           );
-        }
-        return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
-      case 'FACULTY_CREATE':
-      case 'FACULTY_EDIT':
-        return <QuestionnaireCreator
-          initialData={editingAssessment || undefined}
-          onCreate={handleCreateSession}
-          onSaveDraft={handleSaveDraft}
-          onCancel={() => setView('FACULTY_DASHBOARD')}
-        />;
-      case 'FACULTY_LIVE':
-        return activeSession ? (
-          <LiveSession session={activeSession} onEnd={() => {
-            set(ref(db, 'active_session'), null);
-            setActiveSession(null);
-            setView('FACULTY_DASHBOARD');
-          }} />
-        ) : (
-          <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-[#004A98] border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Re-establishing Session...</p>
-            </div>
-          </div>
-        );
-      case 'STUDENT_POLL':
-        if (!studentSession) return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
-        return (
-          <StudentPoll
-            key={studentSession.id}
-            session={studentSession}
-            onSubmit={handleStudentSubmit}
-            onFinished={() => {
-              setStudentSession(null);
-              setView('HOME');
-            }}
-          />
-        );
-      default:
-        return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
+        default:
+          return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
+      }
+    } catch (e) {
+      console.error("Critical Render Error:", e);
+      return (
+        <div className="p-12 text-center">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Something went wrong</h2>
+          <p className="text-slate-500 mb-6">The application encountered a rendering error.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-umak-blue text-white px-6 py-2 rounded-lg font-bold"
+          >
+            Reload Application
+          </button>
+        </div>
+      );
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header
-        currentUser={currentUser}
-        onHome={() => setView('HOME')}
-        onEnterFaculty={handleEnterFacultyMode}
-        onDashboard={() => setView('FACULTY_DASHBOARD')}
-        onLogout={handleLogout}
-      />
-      <main className="flex-grow">
-        {renderView()}
-      </main>
-      <Footer />
-    </div>
+    <ErrorBoundary>
+      <div className="flex flex-col min-h-screen">
+        <Header
+          currentUser={currentUser}
+          onHome={() => setView('HOME')}
+          onEnterFaculty={handleEnterFacultyMode}
+          onDashboard={() => setView('FACULTY_DASHBOARD')}
+          onLogout={handleLogout}
+        />
+        <main className="flex-grow">
+          {renderView()}
+        </main>
+        <Footer />
+      </div>
+    </ErrorBoundary>
   );
 };
 
