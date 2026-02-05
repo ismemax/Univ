@@ -10,18 +10,14 @@
 export const sanitizeInput = (val: string): string => {
     if (typeof val !== 'string') return '';
     let sanitized = val;
-    // Recursive removal of HTML tags
+    // Recursive removal of HTML tags to prevent nested tag injection
     while (sanitized.includes('<') && sanitized.includes('>')) {
         sanitized = sanitized.replace(/<[^>]*>?/gm, '');
     }
     return sanitized
         .replace(/javascript:/gi, '') // Remove javascript: protocol
-        .replace(/on\w+=/gi, '')      // Remove inline event handlers (onerror, onclick, etc)
-        .replace(/&/g, '&amp;')       // Encode &
-        .replace(/</g, '&lt;')        // Encode <
-        .replace(/>/g, '&gt;')        // Encode >
-        .replace(/"/g, '&quot;')      // Encode "
-        .replace(/'/g, '&#x27;')      // Encode '
+        .replace(/on\w+=/gi, '')      // Remove inline event handlers
+        .replace(/[<>]/g, '')         // Strip remaining brackets just in case
         .trim();
 };
 

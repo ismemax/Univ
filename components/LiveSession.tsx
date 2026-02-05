@@ -53,13 +53,26 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   }, [session.status, isPaused, session.startTime, activeQ.timeLimit]);
 
   const chartData = useMemo(() => {
-    if (!activeQ || !activeQ.options) return [];
+    if (!activeQ || !activeQ.options || activeQ.options.length === 0) return [];
     const responses = (session.allResponses && session.allResponses[currentIdx]) || {};
-    return activeQ.options.map((opt, i) => ({
-      name: opt,
-      value: responses[i] || 0
-    }));
-  }, [session, currentIdx, activeQ]);
+
+    return activeQ.options.map((opt, i) => {
+      let val = 0;
+      if (activeQ.type === 'RANKING') {
+        const rankings = responses.rankings || [];
+        val = rankings.reduce((acc: number, r: number[]) => {
+          const pos = r.indexOf(i);
+          return pos === -1 ? acc : acc + (activeQ.options.length - pos);
+        }, 0);
+      } else {
+        val = responses[i] || 0;
+      }
+      return { name: opt, value: val };
+    });
+  }, [session.allResponses, currentIdx, activeQ]);
+
+  // Check if we have any actual data to display
+  const hasData = useMemo(() => chartData.some(d => d.value > 0), [chartData]);
 
   const COLORS_PALETTE = ['#004A98', '#FDB813', '#47528A', '#28336B', '#060E33'];
 
@@ -458,32 +471,46 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
 
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm h-[360px] flex flex-col">
             <h3 className="font-black text-slate-900 mb-6 uppercase tracking-wide">Live Trend Chart</h3>
-            <div className="flex-grow">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={5}
-                    dataKey="value"
-                    animationDuration={800}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS_PALETTE[index % COLORS_PALETTE.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ fontWeight: '900', borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontWeight: '900', textTransform: 'uppercase', fontSize: '10px' }}
-                    layout="horizontal" verticalAlign="bottom" align="center"
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="flex-grow flex items-center justify-center">
+              {hasData ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={5}
+                      dataKey="value"
+                      animationDuration={800}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS_PALETTE[index % COLORS_PALETTE.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ fontWeight: '900', borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Legend
+                      wrapperStyle={{ fontWeight: '900', textTransform: 'uppercase', fontSize: '10px' }}
+                      layout="horizontal" verticalAlign="bottom" align="center"
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center py-10">
+                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-slate-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                    </svg>
+                  </div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+                    No response data<br />captured yet
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
