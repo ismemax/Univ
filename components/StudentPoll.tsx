@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Session, QuestionType } from '../types';
 import { sanitizeInput, hasUserResponded, markUserResponded } from '../utils/securityUtils';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 interface StudentPollProps {
   session: Session;
@@ -83,6 +84,89 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     onSubmit(secureResponse);
     setHasSubmitted(true);
   };
+
+  const chartData = React.useMemo(() => {
+    if (!activeQ || !activeQ.options || activeQ.options.length === 0) return [];
+    const responses = (session.allResponses && session.allResponses[currentIdx]) || {};
+
+    return activeQ.options.map((opt, i) => {
+      let val = 0;
+      if (activeQ.type === 'RANKING') {
+        const rankings = responses.rankings || [];
+        val = rankings.reduce((acc: number, r: number[]) => {
+          const pos = r.indexOf(i);
+          return pos === -1 ? acc : acc + (activeQ.options.length - pos);
+        }, 0);
+      } else {
+        val = responses[i] || 0;
+      }
+      return { name: opt, value: val };
+    });
+  }, [session.allResponses, currentIdx, activeQ]);
+
+  const COLORS_PALETTE = ['#004A98', '#FDB813', '#47528A', '#28336B', '#060E33'];
+  const hasData = chartData.some(d => d.value > 0);
+
+  const renderResults = () => (
+    <div className="py-6 flex flex-col items-center">
+      <div className="w-full h-64 mb-8">
+        {hasData ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+                animationDuration={800}
+              >
+                {chartData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS_PALETTE[index % COLORS_PALETTE.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ fontWeight: '900', borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              />
+              <Legend
+                wrapperStyle={{ fontWeight: '900', textTransform: 'uppercase', fontSize: '9px' }}
+                layout="horizontal" verticalAlign="bottom" align="center"
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-slate-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            </svg>
+            <p className="text-xs font-black uppercase tracking-widest">No Responses Captured</p>
+          </div>
+        )}
+      </div>
+      <div className="space-y-4 w-full px-4 text-left">
+        {activeQ.options && chartData.map((data, i) => {
+          const total = chartData.reduce((acc, d) => acc + d.value, 0);
+          const pct = total > 0 ? Math.round((data.value / total) * 100) : 0;
+          return (
+            <div key={i}>
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1">
+                <span className="text-slate-500 pr-4">{data.name}</span>
+                <span className="text-umak-blue">{pct}%</span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-umak-blue transition-all duration-1000"
+                  style={{ width: `${pct}%` }}
+                ></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   const renderInput = () => {
     switch (activeQ.type) {
@@ -236,18 +320,28 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     );
   }
 
-  if (timeLeft === 0 && !hasSubmitted) {
+  if (timeLeft === 0) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-20 text-center">
-        <div className="bg-white border-2 border-slate-200 rounded-3xl p-10 shadow-2xl">
-          <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <div className="max-w-xl mx-auto px-6 py-12">
+        <div className="bg-white border-2 border-slate-200 rounded-[40px] shadow-2xl p-10 text-center">
+          <div className="flex justify-between items-center mb-8">
+            <span className="text-[10px] font-black text-umak-blue uppercase tracking-widest bg-umak-blue/5 px-3 py-1 rounded-md">
+              Discussion Results
+            </span>
+            <div className="bg-slate-100 text-slate-500 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
+              Time Expired
+            </div>
           </div>
-          <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4 uppercase tracking-tight">Time Expired</h2>
-          <p className="text-slate-600 font-bold mb-10 text-lg">The response window for this question has ended. Please wait for the next question.</p>
-          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waiting for next phase...</div>
+          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-2 line-clamp-2">{activeQ.text}</h2>
+          <p className="text-slate-400 text-xs font-bold mb-8 italic uppercase tracking-wider">The response window has closed.</p>
+
+          {renderResults()}
+
+          <div className="mt-10 pt-8 border-t border-slate-100">
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
+              {currentIdx < session.questions.length - 1 ? 'Prepare for Next Question...' : 'Assessment Finalized'}
+            </div>
+          </div>
         </div>
       </div>
     );
