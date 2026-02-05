@@ -435,7 +435,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col items-center text-center">
             <div className="p-6 bg-white rounded-2xl mb-4 border-2 border-slate-100 shadow-xl">
               <QRCodeSVG
-                value={`${window.location.origin}/poll/${session.accessCode}`}
+                value={`${window.location.protocol}//${window.location.host}${window.location.pathname}?access=${session.accessCode}`}
                 size={180}
                 level="H"
                 includeMargin={false}
@@ -452,7 +452,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             <h3 className="font-black text-[#004A98] mb-1 text-lg uppercase tracking-tight">Access QR Code</h3>
             <p className="text-[10px] font-black text-slate-400 mb-6 uppercase tracking-[0.2em]">Scan to participate</p>
             <div className="bg-slate-900 py-3 px-6 rounded-lg text-[11px] font-black text-[#FACC15] mb-8 w-full shadow-lg truncate">
-              {window.location.host}/poll/{session.accessCode}
+              {window.location.host}/?access={session.accessCode}
             </div>
           </div>
 

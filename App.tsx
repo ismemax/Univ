@@ -25,6 +25,16 @@ const App: React.FC = () => {
   const [studentSession, setStudentSession] = useState<Session | null>(null);
   const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
 
+  // Deep Linking for Student QR Code
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('access');
+    if (code && !studentSession && view === 'HOME') {
+      secureLog(`Deep Link detected: Attempting auto-join for code ${code}`);
+      handleJoinSession(code);
+    }
+  }, [activeSession, db]); // Check on load once db is ready
+
   // Sync across devices via Firebase and initial load
   useEffect(() => {
     // 1. Static User Data (Local Only)
