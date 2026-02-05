@@ -440,7 +440,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 level="H"
                 includeMargin={false}
                 imageSettings={{
-                  src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/UMak_Logo_Registered.png/100px-UMak_Logo_Registered.png",
+                  src: "/umak-logo.png",
                   x: undefined,
                   y: undefined,
                   height: 34,

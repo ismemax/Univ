@@ -25,7 +25,7 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin }) => {
       <div className="mb-16">
         <div className="w-28 h-28 flex items-center justify-center mx-auto mb-8 animate-fade-in">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/UMak_Logo_Registered.png/600px-UMak_Logo_Registered.png"
+            src="/umak-logo.png"
             alt="UMak Logo"
             className="w-full h-full object-contain"
           />
