@@ -59,9 +59,11 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   }, [notifications]);
 
   const chartData = useMemo(() => {
+    if (!session || !session.question || !session.question.options) return [];
+    const responses = session.responses || {};
     return session.question.options.map((opt, i) => ({
       name: opt,
-      value: session.responses[i] || 0
+      value: responses[i] || 0
     }));
   }, [session]);
 
@@ -154,7 +156,8 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             </div>
             <div className="space-y-6">
               {session.question.options.map((opt, i) => {
-                const count = session.responses[i] || 0;
+                const responses = session.responses || {};
+                const count = responses[i] || 0;
                 const pct = session.participantsCount > 0 ? (count / session.participantsCount * 100).toFixed(0) : 0;
                 return (
                   <div key={i}>

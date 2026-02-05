@@ -42,13 +42,13 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
       case QuestionType.RATING_SCALE:
         return (
           <div className="space-y-4">
-            {q.options.map((opt, i) => (
+            {(q.options || []).map((opt, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedOption(i)}
                 className={`w-full text-left p-5 rounded-2xl border-2 transition-all font-black flex items-center justify-between text-lg shadow-sm ${selectedOption === i
-                    ? 'border-[#004A98] bg-[#004A98]/10 text-[#004A98]'
-                    : 'border-slate-200 hover:border-[#004A98]/40 text-slate-700 bg-white'
+                  ? 'border-[#004A98] bg-[#004A98]/10 text-[#004A98]'
+                  : 'border-slate-200 hover:border-[#004A98]/40 text-slate-700 bg-white'
                   }`}
               >
                 <span>{opt}</span>

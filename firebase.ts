@@ -6,6 +6,7 @@ import { getDatabase, ref, onValue, set, update, get } from "firebase/database";
 const firebaseConfig = {
     apiKey: "AIzaSyDJkH1bcc9w5mfbeabpblfS6x6WgnPSO1s",
     authDomain: "univ-633d8.firebaseapp.com",
+    databaseURL: "https://univ-633d8-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "univ-633d8",
     storageBucket: "univ-633d8.firebasestorage.app",
     messagingSenderId: "1043212326820",
