@@ -184,7 +184,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           <span className="text-xs font-black text-[#004A98] uppercase tracking-[0.2em] bg-[#004A98]/5 px-3 py-1 rounded-md">Live Assessment • {session.question.type.replace('_', ' ')}</span>
           <div className="bg-red-50 text-red-600 px-4 py-1.5 rounded-xl text-sm font-black flex items-center gap-2 border border-red-100">
             <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-pulse shadow-sm shadow-red-600/50"></span>
-            0:{String(timeLeft).padStart(2, '0')}
+            {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
           </div>
         </div>
 
