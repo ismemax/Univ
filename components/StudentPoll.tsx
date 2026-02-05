@@ -17,24 +17,33 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   useEffect(() => {
     if (!session || !session.question) return;
 
-    // Check if this device has already submitted for this specific session ID
+    // Check for previous submission
     const submissionKey = `umak_submitted_${session.id}`;
     if (session.question.preventMultipleResponses && localStorage.getItem(submissionKey)) {
       setAlreadyVoted(true);
       setHasSubmitted(true);
     }
 
+    if (session.status !== 'active') return;
+
+    // Set initial time correctly if joining late
+    const calculateTime = () => {
+      const elapsed = Math.floor((Date.now() - (session.startTime || Date.now())) / 1000);
+      const remaining = Math.max(0, session.question.timeLimit - elapsed);
+      setTimeLeft(remaining);
+      return remaining;
+    };
+
+    calculateTime();
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
+      const remaining = calculateTime();
+      if (remaining <= 0) {
+        clearInterval(timer);
+      }
     }, 1000);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [session.status, session.startTime, session.id]);
 
   const handleSubmit = () => {
     if (selectedOption === null || (typeof selectedOption === 'string' && !selectedOption.trim())) {

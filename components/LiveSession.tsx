@@ -22,33 +22,31 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   const [isPaused, setIsPaused] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Sync state when initialSession changes (e.g., from another tab or restart)
+  // Sync state when initialSession changes (e.g., from another tab or response update)
   useEffect(() => {
     setSession(initialSession);
-    setTimeLeft(initialSession.question.timeLimit);
+    // DO NOT reset timeLeft here, it causes the timer to reset when student answers
   }, [initialSession]);
 
-  // Timer Effect: Decrement timeLeft every second
+  // Timer Effect: Sync with session startTime and handle countdown
   useEffect(() => {
-    if (timeLeft <= 0 || session.status === 'ended' || isPaused || session.status === 'waiting') return;
+    if (session.status === 'ended' || isPaused || session.status === 'waiting' || !session.startTime) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        const newTime = Math.max(0, prev - 1);
-        // When timer reaches 0, end the session
-        if (newTime === 0 && session.status !== 'ended') {
-          setSession(current => {
-            const endedSession = { ...current, status: 'ended' as const };
-            localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(endedSession));
-            return endedSession;
-          });
-        }
-        return newTime;
-      });
+      const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+      const remainingTime = Math.max(0, session.question.timeLimit - elapsed);
+
+      setTimeLeft(remainingTime);
+
+      // When timer reaches 0, end the session
+      if (remainingTime === 0 && session.status !== 'ended') {
+        const sessionRef = ref(db, 'active_session');
+        update(sessionRef, { status: 'ended' as const });
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, session.status, isPaused]);
+  }, [session.status, isPaused, session.startTime, session.question.timeLimit]);
 
   // Automatically clear old notifications after 4 seconds
   useEffect(() => {
@@ -206,6 +204,32 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
               })}
             </div>
           </div>
+
+          {/* Text Responses for Short Answer / Essay */}
+          {(session.question.type === 'SHORT_ANSWER' || session.question.type === 'ESSAY') && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="font-black text-slate-900 text-lg uppercase tracking-wide">Latest Open Responses</h3>
+                <div className="text-[10px] font-black text-[#004A98] uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">
+                  {session.responses?.text?.length || 0} Submissions
+                </div>
+              </div>
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {session.responses?.text?.length > 0 ? (
+                  session.responses.text.slice().reverse().map((txt: string, i: number) => (
+                    <div key={i} className="bg-slate-50 border border-slate-100 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+                      <p className="text-slate-800 font-bold text-sm leading-relaxed">{txt}</p>
+                      <span className="text-[9px] font-black text-slate-400 uppercase mt-2 block tracking-widest">Received recently</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-12 text-center">
+                    <p className="text-slate-400 font-bold text-sm italic">Waiting for students to type...</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Side: Visuals & Actions */}
