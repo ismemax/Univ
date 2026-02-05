@@ -10,6 +10,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
+const Home: React.FC<HomeProps> = ({ setView, onJoin }) => {
   const [code, setCode] = useState('');
 
   const handleJoinClick = () => {
@@ -31,19 +32,30 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
             className="w-full h-full object-contain"
           />
         </div>
+<<<<<<< HEAD
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-umak-navy mb-6 tracking-tight">Academic Discussion Board</h1>
         <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed font-medium">
           An official platform designed for the UMak community to facilitate modern academic discussions and real-time interactive lessons.
+=======
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-umak-navy mb-6 tracking-tight">Academic Questionnaire System</h1>
+        <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed font-medium">
+          An official platform designed for the UMak community to facilitate modern academic assessments and research surveys.
+>>>>>>> parent of 7ec1945 (hjj)
         </p>
       </div>
 
       {/* Portal Cards */}
       <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
+<<<<<<< HEAD
         {/* Faculty Mode */}
+=======
+        {/* Faculty Portal */}
+>>>>>>> parent of 7ec1945 (hjj)
         <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center border-b-4 border-b-umak-blue">
           <div className="bg-slate-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 border border-slate-100">
             <Icons.Book />
           </div>
+<<<<<<< HEAD
           <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Faculty Dashboard</h2>
           <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold">
             Create academic discussion points, launch live interactive sessions, and download comprehensive class participation reports.
@@ -57,13 +69,34 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
         </div>
 
         {/* Student Mode */}
+=======
+          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Faculty Portal</h2>
+          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold">
+            Create and manage academic questionnaires, analyze student responses, and export detailed reports for your courses.
+          </p>
+          <button
+            onClick={() => setView('FACULTY_CREATE')}
+            className="w-full bg-umak-blue text-white font-black py-4 rounded-xl hover:bg-umak-navy transition-all uppercase text-sm tracking-widest mt-auto shadow-lg shadow-umak-blue/20 active:scale-95"
+          >
+            Create Questionnaire
+          </button>
+        </div>
+
+        {/* Student Portal */}
+>>>>>>> parent of 7ec1945 (hjj)
         <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center border-b-4 border-b-umak-yellow">
           <div className="bg-slate-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6 border border-slate-100">
             <Icons.IDBadge />
           </div>
+<<<<<<< HEAD
           <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Student Access</h2>
           <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold">
             Participate in live classroom polls and discussions. Simply enter the proctor code provided by your instructor to begin.
+=======
+          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Student Portal</h2>
+          <p className="text-slate-600 mb-10 text-sm leading-relaxed text-center font-semibold">
+            Access assigned surveys, participate in classroom polls, and review your personal assessment history.
+>>>>>>> parent of 7ec1945 (hjj)
           </p>
 
           <div className="w-full mt-auto space-y-4">
@@ -80,7 +113,11 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
               onClick={handleJoinClick}
               className="w-full border-2 border-umak-blue text-umak-blue font-black py-4 rounded-xl hover:bg-umak-blue hover:text-white transition-all uppercase text-sm tracking-widest active:scale-95"
             >
+<<<<<<< HEAD
               Join Discussion
+=======
+              Enter Access Code
+>>>>>>> parent of 7ec1945 (hjj)
             </button>
           </div>
         </div>
