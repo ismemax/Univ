@@ -432,10 +432,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                   count = scoreSum;
                 } else {
                   count = qResponses[i] || 0;
-                  const total = Object.values(qResponses).reduce((a: any, b: any) => {
-                    if (typeof b === 'number') return a + b;
-                    return a + (Array.isArray(b) ? b.length : 0);
-                  }, 0) as number;
+                  const total = chartData.reduce((acc, d) => acc + d.value, 0);
                   pct = total > 0 ? Math.round((count / total) * 100) : 0;
                 }
 
