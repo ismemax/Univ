@@ -2,17 +2,35 @@
     "rules": {
         "active_session": {
             ".read": true,
-            // Rule: Allow write if creating a new session (!data.exists), 
-            // or if clearing an old one (newData == null), 
-            // or if the current session is in a modifiable state (active/waiting/ended).
+            // Allow creation (new session), deletion (cleanup), or updates if status is active/paused/waiting/ended
             ".write": "!data.exists() || !newData.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'paused' || data.child('status').val() === 'waiting' || data.child('status').val() === 'ended'",
+            
+            // SECURITY: Prevent unauthorized modification of core session metadata once created
+            "id": { ".validate": "!data.exists() || newData.val() === data.val()" },
+            "accessCode": { ".validate": "!data.exists() || newData.val() === data.val()" },
+            "questions": { ".validate": "!data.exists() || newData.val() === data.val()" },
+
+            // SECURITY: Prevent "Ballot Stuffing" - participants can only increment by 1
             "participantsCount": {
-                ".validate": "newData.isNumber() && newData.val() >= 0"
+                ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val() + 1)"
             },
+
             "allResponses": {
                 "$questionIndex": {
-                    ".write": "data.parent().parent().exists()",
-                    ".validate": "newData.hasChildren()"
+                    // Validation for Multiple Choice / MCQ (Numeric counters)
+                    "$optionIndex": {
+                        ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val() + 1)"
+                    },
+                    // Validation for Arrays (Short Answer, Ranking, Named Responses)
+                    "text": {
+                        ".validate": "!data.exists() || newData.childrenCount() === data.childrenCount() + 1"
+                    },
+                    "rankings": {
+                        ".validate": "!data.exists() || newData.childrenCount() === data.childrenCount() + 1"
+                    },
+                    "namedResponses": {
+                        ".validate": "!data.exists() || newData.childrenCount() === data.childrenCount() + 1"
+                    }
                 }
             }
         },

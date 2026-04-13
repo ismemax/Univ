@@ -3,14 +3,11 @@ import React from 'react';
 import { User } from '../types';
 
 interface HeaderProps {
-  currentUser: User | null;
   onHome: () => void;
-  onLogin: () => void;
   onDashboard: () => void;
-  onLogout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onLogin, onDashboard, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ onHome, onDashboard }) => {
   return (
     <header className="bg-white border-b border-gray-100 py-4 px-6 md:px-12 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-4 cursor-pointer" onClick={onHome}>
@@ -28,21 +25,9 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onLogin, onDashboa
       </div>
 
 
+      {/* Simplified Navigation */}
       <div className="flex items-center gap-4">
-        {currentUser ? (
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col items-end">
-              <span className="text-xs font-bold text-umak-navy">{currentUser.name}</span>
-              <span className="text-[10px] text-slate-400 uppercase font-extrabold">{currentUser.role}</span>
-            </div>
-            <button
-              onClick={onLogout}
-              className="text-slate-400 hover:text-red-500 font-bold text-xs uppercase tracking-wider transition-colors"
-            >
-              Sign Out
-            </button>
-          </div>
-        ) : null}
+        {/* Navigation links removed as per simplification request */}
       </div>
     </header>
   );

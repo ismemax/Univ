@@ -21,6 +21,7 @@ graph TD
 - **Tailwind CSS**: Used for rapid UI development with strict institutional branding tokens.
 - **Vite**: Utilized as the build engine to ensure fast Hot Module Replacement (HMR) during live session development.
 - **Time Compensation Logic**: Instead of using server-side timers, the app uses shifted Unix timestamps. This minimizes the impact of network latency and allows for seamless Pause/Resume across different time zones.
+- **Student Identity Gate**: Implemented a conditional UI "gate" that enforces participant identification before session entry, ensuring data accountability while maintaining a serverless architecture.
 
 ## 3. Data Models
 
@@ -31,6 +32,7 @@ graph TD
 | title | string | Official name of the assessment |
 | questions | Question[] | Array of question objects |
 | isDraft | boolean | Visibility status in dashboard |
+| requireStudentName | boolean | Flag to mandate student identification |
 
 ### Session (Live Instance)
 | Property | Type | Description |
@@ -39,6 +41,7 @@ graph TD
 | status | enum | Current phase: waiting, active, paused, ended |
 | startTime | number | Timestamp used to calculate countdowns |
 | allResponses | object | Map of question indices to response aggregates |
+| requireStudentName | boolean | Enforced state for the active live session |
 
 ## 4. Logical Flow
 1. **Creation**: Instructor defines an `Assessment`.

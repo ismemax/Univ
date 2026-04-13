@@ -3,7 +3,7 @@
 Since the **UMak Academic Questionnaire System** is a serverless application utilizing **Firebase Realtime Database**, the "API" comprises the data paths and the JSON structures used for real-time synchronization.
 
 ## 1. Authentication
-The application currently uses an anonymous/open access model restricted by institutional security rules. Future iterations will integrate UMak's Google Workspace OAuth.
+The application operates on an **Open Academic Access** model within the University of Makati infrastructure. No individual user authentication is required for faculty management or student participation in this version.
 
 ## 2. Endpoints (Data Paths)
 
@@ -23,6 +23,7 @@ Retrieves the entire state of the active session.
   "startTime": "number (Unix timestamp)",
   "pausedAt": "number | null",
   "participantsCount": "number",
+  "requireStudentName": "boolean",
   "questions": [
     {
       "id": "string",
@@ -36,7 +37,10 @@ Retrieves the entire state of the active session.
     "questionIndex": {
       "optionIndex": "number (count)",
       "text": ["string"],
-      "rankings": [[number]]
+      "rankings": [[number]],
+      "namedResponses": [
+        { "name": "string", "answer": "any" }
+      ]
     }
   }
 }
@@ -56,6 +60,7 @@ Used by students to submit answers.
 **Payload Examples (Multiple Choice):**
 - `{ "0": 1 }` (Increments option index 0)
 - `{ "text": ["My answer"] }` (Appends to text array)
+- `{ "namedResponses": [{ "name": "John Doe", "answer": 0 }] }` (Stores identifiable entry)
 
 ---
 

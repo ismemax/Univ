@@ -3,7 +3,6 @@ import { ViewState, Session, Question, User, Assessment } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
-import Login from './components/Login';
 import FacultyDashboard from './components/FacultyDashboard';
 import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
@@ -20,10 +19,18 @@ const DB_KEY = STORAGE_KEYS.QUESTIONS;
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('HOME');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [studentSession, setStudentSession] = useState<Session | null>(null);
   const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
+  const [joinAttempts, setJoinAttempts] = useState(0);
+  const [joinCooldown, setJoinCooldown] = useState<number | null>(null);
+
+  const GUEST_FACULTY: User = {
+    id: 'faculty_guest',
+    email: 'academic@umak.edu.ph',
+    name: 'Institutional Faculty',
+    role: 'FACULTY'
+  };
 
   // Deep Linking for Student QR Code
   useEffect(() => {
@@ -35,19 +42,8 @@ const App: React.FC = () => {
     }
   }, [activeSession, db]); // Check on load once db is ready
 
-  // Sync across devices via Firebase and initial load
   useEffect(() => {
-    // 1. Static User Data (Local Only)
-    const savedUser = localStorage.getItem(USER_KEY);
-    if (savedUser) {
-      try {
-        setCurrentUser(JSON.parse(savedUser));
-      } catch (e) {
-        handleGenericError(e, "Session expired. Please log in again.");
-      }
-    }
-
-    // 2. Real-time Session Sync via Firebase
+    // 1. Real-time Session Sync via Firebase
     if (!db) {
       secureLog("Firebase database not initialized. Sync skipped.");
       return;
@@ -61,16 +57,9 @@ const App: React.FC = () => {
 
       setActiveSession(session);
 
-      // Restore view if we are faculty and have an active session
+      // Restore view if we have an active session
       if (session && session.status === 'active' && !studentSession) {
-        let user = null;
-        try {
-          user = savedUser ? JSON.parse(savedUser) : null;
-        } catch (e) {
-          secureLog("Failed to parse saved user during sync", e);
-        }
-
-        if (user && user.role === 'FACULTY' && view === 'HOME') {
+        if (view === 'HOME') {
           setView('FACULTY_LIVE');
         }
       }
@@ -87,19 +76,7 @@ const App: React.FC = () => {
   }, [view, studentSession?.id]);
 
   const handleEnterFacultyMode = () => {
-    setView('LOGIN');
-  };
-
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
     setView('FACULTY_DASHBOARD');
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem(USER_KEY);
-    setView('HOME');
   };
 
   const saveToDatabase = (assessment: Assessment) => {
@@ -107,9 +84,9 @@ const App: React.FC = () => {
     const existingIdx = db.findIndex((a: Assessment) => a.id === assessment.id);
 
     if (existingIdx > -1) {
-      db[existingIdx] = { ...assessment, creatorId: currentUser?.id };
+      db[existingIdx] = { ...assessment, creatorId: GUEST_FACULTY.id };
     } else {
-      db.push({ ...assessment, creatorId: currentUser?.id });
+      db.push({ ...assessment, creatorId: GUEST_FACULTY.id });
     }
 
     localStorage.setItem(DB_KEY, JSON.stringify(db));
@@ -202,9 +179,16 @@ const App: React.FC = () => {
   };
 
   const handleJoinSession = async (code: string, honeypotValue = '') => {
+    // 1. Cooldown Check (Brute-force protection)
+    if (joinCooldown && Date.now() < joinCooldown) {
+      const remainingSeconds = Math.ceil((joinCooldown - Date.now()) / 1000);
+      alert(`Security Lockout: Too many failed attempts. Please wait ${remainingSeconds} seconds.`);
+      return;
+    }
+
     const normalizedCode = code.trim().toUpperCase();
 
-    // Antigravity Honeypot Check
+    // 2. Antigravity Honeypot Check
     if (honeypotValue) {
       secureLog("Bot detected via honeymoon field.");
       return;
@@ -216,6 +200,10 @@ const App: React.FC = () => {
 
       if (session) {
         if (String(session.accessCode).trim().toUpperCase() === normalizedCode) {
+          // SUCCESS LOCK
+          setJoinAttempts(0);
+          setJoinCooldown(null);
+
           if (session.status === 'ended') {
             alert('Session Ended: This session has already concluded.');
           } else {
@@ -226,7 +214,17 @@ const App: React.FC = () => {
             setView('STUDENT_POLL');
           }
         } else {
-          alert(`Access Denied: The code "${normalizedCode}" does not match.`);
+          // FAILURE INCREMENT
+          const newAttempts = joinAttempts + 1;
+          setJoinAttempts(newAttempts);
+
+          if (newAttempts >= 5) {
+            const cooldownPeriod = Date.now() + 30000; // 30 second penalty
+            setJoinCooldown(cooldownPeriod);
+            alert('Security Lockout: 5 failed attempts reached. You are locked out for 30 seconds.');
+          } else {
+            alert(`Access Denied: The code "${normalizedCode}" does not match. (${5 - newAttempts} attempts remaining)`);
+          }
         }
       } else {
         alert('Entry Failed: There are no active academic sessions detected.');
@@ -241,26 +239,14 @@ const App: React.FC = () => {
       switch (view) {
         case 'HOME':
           return <Home setView={setView} onJoin={handleJoinSession} onEnterFaculty={handleEnterFacultyMode} />;
-        case 'LOGIN':
-          return <Login onLogin={handleLogin} onCancel={() => setView('HOME')} />;
         case 'FACULTY_DASHBOARD':
-          if (currentUser && currentUser.role === 'FACULTY') {
-            return (
-              <FacultyDashboard
-                user={currentUser}
-                onCreateNew={() => { setEditingAssessment(null); setView('FACULTY_CREATE'); }}
-                onStartSession={handleCreateSession}
-                onEditDraft={(a: Assessment) => { setEditingAssessment(a); setView('FACULTY_EDIT'); }}
-              />
-            );
-          }
-          // If we're here but role isn't set yet, the state update is pending.
-          // Return a loader to prevent a blank screen.
           return (
-            <div className="min-h-[50vh] flex flex-col items-center justify-center">
-              <div className="w-10 h-10 border-4 border-umak-blue border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Authorizing Faculty Access...</p>
-            </div>
+            <FacultyDashboard
+              user={GUEST_FACULTY}
+              onCreateNew={() => { setEditingAssessment(null); setView('FACULTY_CREATE'); }}
+              onStartSession={handleCreateSession}
+              onEditDraft={(a: Assessment) => { setEditingAssessment(a); setView('FACULTY_EDIT'); }}
+            />
           );
         case 'FACULTY_CREATE':
         case 'FACULTY_EDIT':
@@ -273,9 +259,9 @@ const App: React.FC = () => {
         case 'FACULTY_LIVE':
           return activeSession ? (
             <LiveSession session={activeSession} onEnd={() => {
-              set(ref(db, 'active_session'), null);
+              set(ref(db, 'active_session'), null); // Correctly using set from firebase logic
               setActiveSession(null);
-              setView('FACULTY_DASHBOARD');
+              setView('HOME');
             }} />
           ) : (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -322,11 +308,8 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <div className="flex flex-col min-h-screen">
         <Header
-          currentUser={currentUser}
           onHome={() => setView('HOME')}
-          onEnterFaculty={handleEnterFacultyMode}
           onDashboard={() => setView('FACULTY_DASHBOARD')}
-          onLogout={handleLogout}
         />
         <main className="flex-grow">
           {renderView()}
