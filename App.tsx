@@ -57,9 +57,10 @@ const App: React.FC = () => {
 
       setActiveSession(session);
 
-      // Restore view if we have an active session
+      // Restore view only if this specific device is the host of the active session
       if (session && session.status === 'active' && !studentSession) {
-        if (view === 'HOME') {
+        const hostOfId = localStorage.getItem('umak_host_of');
+        if (hostOfId === session.id && view === 'HOME') {
           setView('FACULTY_LIVE');
         }
       }
@@ -120,6 +121,9 @@ const App: React.FC = () => {
 
       // Push the new session
       await set(ref(db, 'active_session'), newSession);
+
+      // Mark THIS device as the official host for auto-resume logic
+      localStorage.setItem('umak_host_of', newSession.id);
 
       setActiveSession(newSession);
       setView('FACULTY_LIVE');
@@ -267,6 +271,7 @@ const App: React.FC = () => {
             <LiveSession session={activeSession} onEnd={() => {
               set(ref(db, 'active_session'), null); // Correctly using set from firebase logic
               setActiveSession(null);
+              localStorage.removeItem('umak_host_of');
               setView('HOME');
             }} />
           ) : (

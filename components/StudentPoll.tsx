@@ -191,7 +191,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                   : 'border-slate-200 hover:border-umak-blue/40 text-slate-700 bg-white'
                   }`}
               >
-                <span>{opt}</span>
+                <span className="break-words mr-4">{opt}</span>
                 {selectedOption === i && (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -245,7 +245,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                       <div className="w-8 h-8 bg-umak-blue text-white rounded-lg flex items-center justify-center font-black text-sm">
                         {rank + 1}
                       </div>
-                      <span className="flex-grow font-black text-slate-800 text-sm">{activeQ.options[optIdx]}</span>
+                      <span className="flex-grow font-black text-slate-800 text-sm break-words">{activeQ.options[optIdx]}</span>
                       <button onClick={() => handleRemove(optIdx)} className="text-slate-300 hover:text-red-500 p-2">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -380,7 +380,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
               Time Expired
             </div>
           </div>
-          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-2 line-clamp-2">{activeQ.text}</h2>
+          <h2 className="text-2xl font-serif font-bold text-umak-navy mb-2 break-words">{activeQ.text}</h2>
           <p className="text-slate-400 text-xs font-bold mb-8 italic uppercase tracking-wider">The response window has closed.</p>
 
           {renderResults()}
@@ -412,7 +412,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           </div>
         </div>
 
-        <h2 className="text-3xl font-serif font-bold text-umak-navy mb-12 leading-tight tracking-tight">
+        <h2 className="text-3xl font-serif font-bold text-umak-navy mb-12 leading-tight tracking-tight break-words">
           {session.status === 'waiting' ? (
             <span className="text-slate-300 italic flex items-center gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
