@@ -1,45 +1,43 @@
+
 {
     "rules": {
         "active_session": {
             ".read": true,
-            // Allow creation (new session), deletion (cleanup), or updates if status is active/paused/waiting/ended
             ".write": "!data.exists() || !newData.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'paused' || data.child('status').val() === 'waiting' || data.child('status').val() === 'ended'",
-            
-            // SECURITY: Prevent unauthorized modification of core session metadata once created
-            "id": { ".validate": "!data.exists() || newData.val() === data.val()" },
-            "accessCode": { ".validate": "!data.exists() || newData.val() === data.val()" },
-            "questions": { ".validate": "!data.exists() || newData.val() === data.val()" },
-
-            // SECURITY: Allow identity registration
             "identities": {
                 ".write": "data.parent().exists() && data.parent().child('status').val() !== 'ended'",
                 "$nameKey": {
                     ".validate": "newData.isString() && newData.val().length > 0"
                 }
             },
-
-            // SECURITY: Prevent "Ballot Stuffing" - participants can only increment by 1
             "participantsCount": {
-                ".validate": "newData.isNumber() && (!data.exists() || (newData.val() >= data.val()))"
+                ".validate": "newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
             },
-
             "allResponses": {
-                "$questionIndex": {
-                    // Validation for Multiple Choice / MCQ (Numeric counters)
-                    "$optionIndex": {
-                        ".validate": "newData.isNumber() && (!data.exists() || (newData.val() >= data.val()))"
+                "$qIdx": {
+                    ".write": "root.child('active_session/status').val() === 'active'",
+                    "$optionIdx": {
+                        ".validate": "newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
                     },
-                    // Validation for Arrays (Short Answer, Ranking, Named Responses)
-                    "text": { ".validate": "newData.hasChildren()" },
-                    "rankings": { ".validate": "newData.hasChildren()" },
-                    "namedResponses": { ".validate": "newData.hasChildren()" }
+                    "text": {
+                        ".validate": "newData.hasChildren()"
+                    },
+                    "rankings": {
+                        ".validate": "newData.hasChildren()"
+                    },
+                    "namedResponses": {
+                        ".validate": "newData.hasChildren()"
+                    }
                 }
             }
         },
-        "users": {
-            "$uid": {
-                ".read": "$uid === auth.uid",
-                ".write": "$uid === auth.uid"
+        "attendance": {
+            "$sessionId": {
+                ".read": true,
+                "$nameKey": {
+                    ".write": "root.child('active_session/id').val() === $sessionId && root.child('active_session/status').val() !== 'ended'",
+                    ".validate": "newData.isString() && newData.val().length > 0"
+                }
             }
         }
     }

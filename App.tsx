@@ -57,22 +57,33 @@ const App: React.FC = () => {
       const data = snapshot.val();
       const session: Session | null = data || null;
 
-      setActiveSession(session);
+      if (session) {
+        // Fetch supplemental attendance data for the session
+        const attendanceRef = ref(db, `attendance/${session.id}`);
+        get(attendanceRef).then((attSnapshot) => {
+          const identities = attSnapshot.exists() ? attSnapshot.val() : {};
+          const mergedSession = { ...session, identities };
 
-      // Restore view only if this specific device is the host of the active session (All non-terminal states)
-      if (session && (session.status === 'active' || session.status === 'paused' || session.status === 'waiting') && !studentSession) {
-        const hostOfId = safeStorage.getItem('umak_host_of');
-        if (hostOfId === session.id && view === 'HOME') {
-          setView('FACULTY_LIVE');
-        }
+          setActiveSession(mergedSession);
+
+          // Restore view only if this specific device is the host of the active session (All non-terminal states)
+          if (mergedSession && (mergedSession.status === 'active' || mergedSession.status === 'paused' || mergedSession.status === 'waiting') && !studentSession) {
+            const hostOfId = safeStorage.getItem('umak_host_of');
+            if (hostOfId === mergedSession.id && view === 'HOME') {
+              setView('FACULTY_LIVE');
+            }
+          }
+
+          // Sync student session state
+          setStudentSession(current => {
+            if (!current) return null;
+            if (!mergedSession || mergedSession.id !== current.id) return null;
+            return { ...current, ...mergedSession };
+          });
+        });
+      } else {
+        setActiveSession(null);
       }
-
-      // Sync student session state
-      setStudentSession(current => {
-        if (!current) return null;
-        if (!session || session.id !== current.id) return null;
-        return { ...current, ...session };
-      });
     });
 
     return () => unsubscribe();
@@ -196,17 +207,17 @@ const App: React.FC = () => {
     try {
       const { sanitizeInput } = await import('./utils/securityUtils');
       const secureName = sanitizeInput(name);
-      if (!secureName) return;
+      if (!secureName || !activeSession?.id) return;
 
       // Sanitization for Firebase Keys
       const nameKey = secureName.replace(/[.$#[\]/]/g, '_');
-      secureLog(`Registering identity: ${secureName}`);
+      secureLog(`Registering attendance for session ${activeSession.id}: ${secureName}`);
 
-      // Use a direct reference to the specific identity path
-      const identityRef = ref(db, `active_session/identities/${nameKey}`);
-      await set(identityRef, secureName);
+      // Use a dedicated top-level node for attendance to avoid session state conflicts
+      const attendanceRef = ref(db, `attendance/${activeSession.id}/${nameKey}`);
+      await set(attendanceRef, secureName);
       
-      secureLog("Identity registered successfully.");
+      secureLog("Attendance registered successfully.");
     } catch (e) {
       secureLog("Failed to register identity", e);
     }
