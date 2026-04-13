@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Session, QuestionType } from '../types';
 import { sanitizeInput, hasUserResponded, markUserResponded } from '../utils/securityUtils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { safeStorage } from '../utils/storageUtils';
 
 interface StudentPollProps {
   session: Session;
@@ -18,11 +19,18 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [alreadyVoted, setAlreadyVoted] = useState(false);
-  const [studentName, setStudentName] = useState(() => localStorage.getItem(`umak_name_${session.id}`) || '');
+  const [studentName, setStudentName] = useState(() => safeStorage.getItem(`umak_name_${session.id}`) || '');
   const [isNameSet, setIsNameSet] = useState(() => {
     if (!session.requireStudentName) return true;
-    return !!localStorage.getItem(`umak_name_${session.id}`);
+    return !!safeStorage.getItem(`umak_name_${session.id}`);
   });
+
+  // Re-sync identity if already set (handles refresh/re-join visibility)
+  useEffect(() => {
+    if (isNameSet && studentName && session.id) {
+       onRegister(studentName);
+    }
+  }, []);
 
   // Initialize timeLeft
   const getInitialTime = () => {
@@ -344,10 +352,10 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                 setIsNameSet(true);
                 
                 // Background operations
-                localStorage.setItem(`umak_name_${session.id}`, studentName);
+                safeStorage.setItem(`umak_name_${session.id}`, studentName);
                 onRegister(studentName);
               }}
-              className="w-full bg-umak-blue text-white font-black py-5 rounded-2xl hover:bg-umak-navy transition-all shadow-xl shadow-umak-blue/20 uppercase text-xs tracking-[0.2em]"
+              className="w-full bg-umak-blue text-white font-black py-5 rounded-2xl hover:bg-umak-navy transition-all shadow-xl shadow-umak-blue/20 uppercase text-xs tracking-[0.2em] relative z-50"
             >
               Continue to Assessment
             </button>

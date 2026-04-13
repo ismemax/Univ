@@ -1,0 +1,29 @@
+
+/**
+ * Safe wrapper for localStorage access to prevent crashes in browsers with 
+ * strict privacy settings or disabled third-party cookies (e.g., Opera GX, Brave).
+ */
+export const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn("Storage access denied:", e);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn("Storage access denied:", e);
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.warn("Storage access denied:", e);
+    }
+  }
+};

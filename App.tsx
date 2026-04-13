@@ -17,6 +17,8 @@ const SESSION_KEY = STORAGE_KEYS.SESSION;
 const USER_KEY = STORAGE_KEYS.USER;
 const DB_KEY = STORAGE_KEYS.QUESTIONS;
 
+import { safeStorage } from './utils/storageUtils';
+
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('HOME');
   const [activeSession, setActiveSession] = useState<Session | null>(null);
@@ -59,7 +61,7 @@ const App: React.FC = () => {
 
       // Restore view only if this specific device is the host of the active session (All non-terminal states)
       if (session && (session.status === 'active' || session.status === 'paused' || session.status === 'waiting') && !studentSession) {
-        const hostOfId = localStorage.getItem('umak_host_of');
+        const hostOfId = safeStorage.getItem('umak_host_of');
         if (hostOfId === session.id && view === 'HOME') {
           setView('FACULTY_LIVE');
         }
@@ -124,7 +126,7 @@ const App: React.FC = () => {
       await set(ref(db, 'active_session'), newSession);
 
       // Mark THIS device as the official host for auto-resume logic
-      localStorage.setItem('umak_host_of', newSession.id);
+      safeStorage.setItem('umak_host_of', newSession.id);
 
       setActiveSession(newSession);
       setView('FACULTY_LIVE');
@@ -292,7 +294,7 @@ const App: React.FC = () => {
             <LiveSession session={activeSession} onEnd={() => {
               set(ref(db, 'active_session'), null); // Correctly using set from firebase logic
               setActiveSession(null);
-              localStorage.removeItem('umak_host_of');
+              safeStorage.removeItem('umak_host_of');
               setView('HOME');
             }} />
           ) : (
