@@ -58,18 +58,13 @@ const App: React.FC = () => {
       const session: Session | null = data || null;
 
       if (session) {
-        // Fetch supplemental attendance data for the session
-        const attendanceRef = ref(db, `attendance/${session.id}`);
-        get(attendanceRef).then((attSnapshot) => {
-          const identities = attSnapshot.exists() ? attSnapshot.val() : {};
-          const mergedSession = { ...session, identities };
-
-          setActiveSession(mergedSession);
+          // Update basic session state (identities will be merged by the attendance listener)
+          setActiveSession(prev => prev ? { ...prev, ...session } : session);
 
           // Restore view only if this specific device is the host of the active session (All non-terminal states)
-          if (mergedSession && (mergedSession.status === 'active' || mergedSession.status === 'paused' || mergedSession.status === 'waiting') && !studentSession) {
+          if (session && (session.status === 'active' || session.status === 'paused' || session.status === 'waiting') && !studentSession) {
             const hostOfId = safeStorage.getItem('umak_host_of');
-            if (hostOfId === mergedSession.id && view === 'HOME') {
+            if (hostOfId === session.id && view === 'HOME') {
               setView('FACULTY_LIVE');
             }
           }
@@ -77,17 +72,33 @@ const App: React.FC = () => {
           // Sync student session state
           setStudentSession(current => {
             if (!current) return null;
-            if (!mergedSession || mergedSession.id !== current.id) return null;
-            return { ...current, ...mergedSession };
+            if (!session || session.id !== current.id) return null;
+            return { ...current, ...session };
           });
-        });
       } else {
         setActiveSession(null);
       }
     });
 
-    return () => unsubscribe();
-  }, [view, studentSession?.id]);
+    // 2. Dedicated Attendance Listener for Host (Real-time participant registry)
+    const hostOfId = safeStorage.getItem('umak_host_of');
+    let attendanceUnsubscribe: (() => void) | null = null;
+
+    if (activeSession?.id && hostOfId === activeSession.id) {
+       const attendanceRef = ref(db, `attendance/${activeSession.id}`);
+       attendanceUnsubscribe = onValue(attendanceRef, (snapshot) => {
+         if (snapshot.exists()) {
+           const identities = snapshot.val();
+           setActiveSession(prev => prev ? { ...prev, identities } : null);
+         }
+       });
+    }
+
+    return () => {
+      unsubscribe();
+      if (attendanceUnsubscribe) attendanceUnsubscribe();
+    };
+  }, [view, studentSession?.id, activeSession?.id]);
 
   const handleEnterFacultyMode = () => {
     setView('FACULTY_DASHBOARD');
