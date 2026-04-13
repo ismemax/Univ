@@ -162,7 +162,7 @@ const App: React.FC = () => {
         markUserJoined(session.id);
       }
 
-      // Store named response if available
+      // Store named response if available (Part of question analytics)
       if (studentName) {
         const namedResponses = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].namedResponses) || [];
         const secureName = sanitizeInput(studentName);
@@ -185,6 +185,26 @@ const App: React.FC = () => {
       await update(sessionRef, updates);
     } catch (e) {
       handleGenericError(e, "Failed to submit your response. Please check your connection.");
+    }
+  };
+
+  const handleRegisterIdentity = async (name: string) => {
+    const sessionRef = ref(db, 'active_session');
+    try {
+      const snapshot = await get(sessionRef);
+      const session: Session = snapshot.val();
+      if (!session) return;
+
+      const secureName = sanitizeInput(name);
+      const currentIdentities = session.identities || [];
+      
+      if (currentIdentities.includes(secureName)) return;
+
+      await update(sessionRef, {
+        identities: [...currentIdentities, secureName]
+      });
+    } catch (e) {
+      secureLog("Failed to register identity", e);
     }
   };
 
@@ -288,6 +308,7 @@ const App: React.FC = () => {
             <StudentPoll
               key={studentSession.id}
               session={studentSession}
+              onRegister={handleRegisterIdentity}
               onSubmit={handleStudentSubmit}
               onFinished={() => {
                 setStudentSession(null);

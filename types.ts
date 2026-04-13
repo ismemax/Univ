@@ -42,6 +42,7 @@ export interface Session {
   isStarted: boolean;
   preventMultipleResponses?: boolean;
   requireStudentName?: boolean;
+  identities?: string[];
 }
 
 export type UserRole = 'FACULTY' | 'STUDENT' | null;

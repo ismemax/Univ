@@ -171,20 +171,13 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
       currentY += 8;
 
       // -- Participants List (If required) --
-      if (session.requireStudentName) {
-        const allNames = new Set<string>();
-        Object.values(session.allResponses || {}).forEach((qRes: any) => {
-          (qRes.namedResponses || []).forEach((nr: any) => allNames.add(nr.name));
-        });
-
-        if (allNames.size > 0) {
-          doc.setFontSize(8);
-          doc.setTextColor(150, 150, 150);
-          const nameList = Array.from(allNames).join(', ');
-          const nameLines = doc.splitTextToSize(`Verified Participants: ${nameList}`, contentWidth);
-          doc.text(nameLines, margin, currentY);
-          currentY += (nameLines.length * 4) + 5;
-        }
+      if (session.requireStudentName && session.identities && session.identities.length > 0) {
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        const nameList = session.identities.join(', ');
+        const nameLines = doc.splitTextToSize(`Verified Participants: ${nameList}`, contentWidth);
+        doc.text(nameLines, margin, currentY);
+        currentY += (nameLines.length * 4) + 5;
       }
       currentY += 7;
 
@@ -473,15 +466,15 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {session.allResponses?.[currentIdx]?.namedResponses?.length > 0 ? (
-                  session.allResponses[currentIdx].namedResponses.map((nr: any, i: number) => (
+                {session.identities && session.identities.length > 0 ? (
+                  session.identities.map((name: string, i: number) => (
                     <div key={i} className="bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 animate-in zoom-in-95 max-w-full overflow-hidden">
                       <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-[11px] font-bold text-slate-700 truncate">{nr.name}</span>
+                      <span className="text-[11px] font-bold text-slate-700 truncate">{name}</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-slate-400 font-bold text-xs italic py-4 w-full text-center">No participants have submitted identification yet.</p>
+                  <p className="text-slate-400 font-bold text-xs italic py-4 w-full text-center">No participants have joined the session registry yet.</p>
                 )}
               </div>
             </div>

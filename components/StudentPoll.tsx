@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 
 interface StudentPollProps {
   session: Session;
+  onRegister: (name: string) => void;
   onSubmit: (response: any, studentName?: string) => void;
   onFinished: () => void;
 }
@@ -17,8 +18,11 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [alreadyVoted, setAlreadyVoted] = useState(false);
-  const [studentName, setStudentName] = useState('');
-  const [isNameSet, setIsNameSet] = useState(!session.requireStudentName);
+  const [studentName, setStudentName] = useState(() => localStorage.getItem(`umak_name_${session.id}`) || '');
+  const [isNameSet, setIsNameSet] = useState(() => {
+    if (!session.requireStudentName) return true;
+    return !!localStorage.getItem(`umak_name_${session.id}`);
+  });
 
   // Initialize timeLeft
   const getInitialTime = () => {
@@ -335,6 +339,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
             <button
               onClick={() => {
                 if (studentName.trim().length < 3) return alert('Please enter your full name (minimum 3 characters)');
+                localStorage.setItem(`umak_name_${session.id}`, studentName);
+                onRegister(studentName);
                 setIsNameSet(true);
               }}
               className="w-full bg-umak-blue text-white font-black py-5 rounded-2xl hover:bg-umak-navy transition-all shadow-xl shadow-umak-blue/20 uppercase text-xs tracking-[0.2em]"
