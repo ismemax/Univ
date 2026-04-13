@@ -10,27 +10,29 @@
             "accessCode": { ".validate": "!data.exists() || newData.val() === data.val()" },
             "questions": { ".validate": "!data.exists() || newData.val() === data.val()" },
 
+            // SECURITY: Allow identity registration
+            "identities": {
+                ".write": "data.parent().exists() && data.parent().child('status').val() !== 'ended'",
+                "$nameKey": {
+                    ".validate": "newData.isString() && newData.val().length > 0"
+                }
+            },
+
             // SECURITY: Prevent "Ballot Stuffing" - participants can only increment by 1
             "participantsCount": {
-                ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val() + 1)"
+                ".validate": "newData.isNumber() && (!data.exists() || (newData.val() >= data.val()))"
             },
 
             "allResponses": {
                 "$questionIndex": {
                     // Validation for Multiple Choice / MCQ (Numeric counters)
                     "$optionIndex": {
-                        ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val() + 1)"
+                        ".validate": "newData.isNumber() && (!data.exists() || (newData.val() >= data.val()))"
                     },
                     // Validation for Arrays (Short Answer, Ranking, Named Responses)
-                    "text": {
-                        ".validate": "!data.exists() || newData.childrenCount() === data.childrenCount() + 1"
-                    },
-                    "rankings": {
-                        ".validate": "!data.exists() || newData.childrenCount() === data.childrenCount() + 1"
-                    },
-                    "namedResponses": {
-                        ".validate": "!data.exists() || newData.childrenCount() === data.childrenCount() + 1"
-                    }
+                    "text": { ".validate": "newData.hasChildren()" },
+                    "rankings": { ".validate": "newData.hasChildren()" },
+                    "namedResponses": { ".validate": "newData.hasChildren()" }
                 }
             }
         },

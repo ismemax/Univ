@@ -114,6 +114,7 @@ const App: React.FC = () => {
         isStarted: !assessment.hasLobby,
         preventMultipleResponses: assessment.preventMultipleResponses ?? true, // Default to true for Academic integrity
         requireStudentName: assessment.requireStudentName || false,
+        identities: {}
       };
 
       // Ensure we clear any old active session reference first
@@ -194,12 +195,15 @@ const App: React.FC = () => {
       const secureName = sanitizeInput(name);
       if (!secureName) return;
 
-      // RTDB keys cannot contain: . $ # [ ] /
+      // Sanitization for Firebase Keys
       const nameKey = secureName.replace(/[.$#[\]/]/g, '_');
+      secureLog(`Registering identity: ${secureName}`);
 
-      await update(ref(db, `active_session/identities`), {
-        [nameKey]: true
-      });
+      // Use a direct reference to the specific identity path
+      const identityRef = ref(db, `active_session/identities/${nameKey}`);
+      await set(identityRef, secureName);
+      
+      secureLog("Identity registered successfully.");
     } catch (e) {
       secureLog("Failed to register identity", e);
     }

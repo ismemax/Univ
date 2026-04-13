@@ -42,7 +42,7 @@ export interface Session {
   isStarted: boolean;
   preventMultipleResponses?: boolean;
   requireStudentName?: boolean;
-  identities?: Record<string, boolean>;
+  identities?: Record<string, string>;
 }
 
 export type UserRole = 'FACULTY' | 'STUDENT' | null;

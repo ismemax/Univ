@@ -174,7 +174,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
       if (session.requireStudentName && session.identities) {
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        const nameList = Object.keys(session.identities).join(', ');
+        const nameList = Object.values(session.identities).join(', ');
         const nameLines = doc.splitTextToSize(`Verified Participants: ${nameList}`, contentWidth);
         doc.text(nameLines, margin, currentY);
         currentY += (nameLines.length * 4) + 5;
@@ -467,7 +467,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
               </div>
               <div className="flex flex-wrap gap-2">
                 {session.identities ? (
-                  Object.keys(session.identities).map((name: string, i: number) => (
+                  Object.values(session.identities).map((name: string, i: number) => (
                     <div key={i} className="bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 animate-in zoom-in-95 max-w-full overflow-hidden">
                       <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
                       <span className="text-[11px] font-bold text-slate-700 truncate">{name}</span>
