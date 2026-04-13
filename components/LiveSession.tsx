@@ -326,7 +326,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                   </span>
                   {!isSessionEnded && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
                 </div>
-                <h2 className="text-3xl font-serif font-bold text-umak-navy leading-tight">
+                <h2 className="text-3xl font-serif font-bold text-umak-navy leading-tight break-words">
                   {session.status === 'waiting' ? (
                     <span className="text-slate-300 italic flex items-center gap-3">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -475,9 +475,9 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
               <div className="flex flex-wrap gap-2">
                 {session.allResponses?.[currentIdx]?.namedResponses?.length > 0 ? (
                   session.allResponses[currentIdx].namedResponses.map((nr: any, i: number) => (
-                    <div key={i} className="bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 animate-in zoom-in-95">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-[11px] font-bold text-slate-700">{nr.name}</span>
+                    <div key={i} className="bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 animate-in zoom-in-95 max-w-full overflow-hidden">
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                      <span className="text-[11px] font-bold text-slate-700 truncate">{nr.name}</span>
                     </div>
                   ))
                 ) : (
@@ -500,8 +500,8 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                   <p className="text-slate-300 italic text-center text-sm font-bold">Waiting for activation...</p>
                 ) : session.allResponses && session.allResponses[currentIdx]?.text?.length > 0 ? (
                   session.allResponses[currentIdx].text.slice().reverse().map((txt: string, i: number) => (
-                    <div key={i} className="bg-slate-50 border border-slate-100 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2">
-                      <p className="text-slate-800 font-bold text-sm leading-relaxed">{txt}</p>
+                    <div key={i} className="bg-slate-50 border border-slate-100 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2 overflow-hidden">
+                      <p className="text-slate-800 font-bold text-sm leading-relaxed break-words">{txt}</p>
                       <span className="text-[9px] font-black text-slate-400 uppercase mt-2 block tracking-widest">Received recently</span>
                     </div>
                   ))
