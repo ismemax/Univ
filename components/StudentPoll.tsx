@@ -138,7 +138,6 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                 cy="50%"
                 innerRadius={50}
                 outerRadius={80}
-                paddingAngle={5}
                 dataKey="value"
                 animationDuration={800}
               >

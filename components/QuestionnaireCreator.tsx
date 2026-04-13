@@ -23,7 +23,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
   const [activeIndex, setActiveIndex] = useState(0);
   const [preventMultiple, setPreventMultiple] = useState(initialData?.preventMultipleResponses || true);
   const [hasLobby, setHasLobby] = useState(initialData?.hasLobby || false);
-  const [requireName, setRequireName] = useState(initialData?.requireStudentName || false);
+  const [requireName, setRequireName] = useState(initialData?.requireStudentName ?? true);
 
   const activeQ = questions[activeIndex];
 

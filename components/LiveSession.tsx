@@ -454,16 +454,15 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
             </div>
           </div>
 
-          {session.requireStudentName && (
             <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-black text-slate-900 text-lg uppercase tracking-wide">Participant Registry</h3>
                 <div className="text-[10px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-3 py-1 rounded-full">
-                  Verified Identity
+                  {session.requireStudentName ? 'Verified Identity' : 'Anonymous Participation'}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {session.identities ? (
+                {session.identities && Object.keys(session.identities || {}).length > 0 ? (
                   Object.values(session.identities).map((name: string, i: number) => (
                     <div key={i} className="bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 animate-in zoom-in-95 max-w-full overflow-hidden">
                       <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
@@ -471,11 +470,10 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-slate-400 font-bold text-xs italic py-4 w-full text-center">No participants have joined the session registry yet.</p>
+                  <p className="text-slate-400 font-bold text-xs italic py-4 w-full text-center">No participants have joined the registry yet.</p>
                 )}
               </div>
             </div>
-          )}
 
           {(activeQ.type === 'SHORT_ANSWER' || activeQ.type === 'ESSAY') && (
             <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
@@ -543,7 +541,6 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                       cy="50%"
                       innerRadius={60}
                       outerRadius={90}
-                      paddingAngle={5}
                       dataKey="value"
                       animationDuration={800}
                     >
