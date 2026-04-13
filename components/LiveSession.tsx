@@ -18,33 +18,34 @@ interface LiveSessionProps {
   onEnd: () => void;
 }
 
-const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEnd }) => {
-  const [session, setSession] = useState<Session>(initialSession);
+const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
   const currentIdx = session.currentQuestionIndex || 0;
   const activeQ = session.questions[currentIdx];
 
   const [timeLeft, setTimeLeft] = useState(activeQ.timeLimit);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  // Sync state when initialSession changes
-  useEffect(() => {
-    setSession(initialSession);
-  }, [initialSession]);
 
   // Timer Effect
   useEffect(() => {
     if (session.status === 'ended' || session.status === 'paused' || session.status === 'waiting' || !session.startTime) return;
 
-    const timer = setInterval(() => {
+    const syncTime = () => {
       const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
       const remainingTime = Math.max(0, activeQ.timeLimit - elapsed);
-
       setTimeLeft(remainingTime);
+      return remainingTime;
+    };
 
+    syncTime(); // Update immediately
+
+    const timer = setInterval(() => {
+      const remaining = syncTime();
+      
       // When timer reaches 0, we don't end entire session automatically if more questions exist
       // But for simple consistency, we'll mark this specific question phase as "ended-looking" or just stop timer
-      if (remainingTime === 0 && session.status !== 'ended') {
-        // We can just leave it at 0. The teacher manually goes to next.
+      if (remaining === 0 && session.status !== 'ended') {
+        clearInterval(timer);
       }
     }, 1000);
 
@@ -98,23 +99,34 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   };
 
   const togglePause = async () => {
+    if (isProcessing) return;
     const sessionRef = ref(db, 'active_session');
     const isCurrentlyPaused = session.status === 'paused';
 
-    if (isCurrentlyPaused) {
-      // Resume logic: Shift startTime by the duration it was paused
-      const pausedDuration = Date.now() - (session.pausedAt || Date.now());
-      await update(sessionRef, {
-        status: 'active',
-        startTime: session.startTime + pausedDuration,
-        pausedAt: null
-      });
-    } else {
-      // Pause logic: Record when it was paused
-      await update(sessionRef, {
-        status: 'paused',
-        pausedAt: Date.now()
-      });
+    setIsProcessing(true);
+    try {
+      if (isCurrentlyPaused) {
+        // Resume logic: Shift startTime by the duration it was paused
+        const pausedAt = session.pausedAt || Date.now();
+        const pausedDuration = Date.now() - pausedAt;
+        
+        await update(sessionRef, {
+          status: 'active',
+          startTime: (session.startTime || Date.now()) + pausedDuration,
+          pausedAt: null
+        });
+      } else {
+        // Pause logic: Record when it was paused
+        await update(sessionRef, {
+          status: 'paused',
+          pausedAt: Date.now()
+        });
+      }
+    } catch (err) {
+      console.error("Pause/Resume failed:", err);
+      alert("Failed to update session status. Please check your connection.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -342,12 +354,13 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                   <>
                     <button
                       onClick={togglePause}
-                      className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${session.status === 'paused'
+                      disabled={isProcessing}
+                      className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''} ${session.status === 'paused'
                         ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                         }`}
                     >
-                      {session.status === 'paused' ? 'Resume' : 'Pause'}
+                      {isProcessing ? 'Updating...' : (session.status === 'paused' ? 'Resume' : 'Pause')}
                     </button>
                     {currentIdx < session.questions.length - 1 && (
                       <button
