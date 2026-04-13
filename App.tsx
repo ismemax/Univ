@@ -87,10 +87,11 @@ const App: React.FC = () => {
     if (activeSession?.id && hostOfId === activeSession.id) {
        const attendanceRef = ref(db, `attendance/${activeSession.id}`);
        attendanceUnsubscribe = onValue(attendanceRef, (snapshot) => {
-         if (snapshot.exists()) {
-           const identities = snapshot.val();
-           setActiveSession(prev => prev ? { ...prev, identities } : null);
-         }
+         const identities = snapshot.exists() ? snapshot.val() : {};
+         setActiveSession(prev => {
+            if (!prev) return null;
+            return { ...prev, identities };
+         });
        });
     }
 
@@ -235,8 +236,9 @@ const App: React.FC = () => {
       await set(attendanceRef, secureName);
       
       secureLog("Attendance registered successfully.");
-    } catch (e) {
+    } catch (e: any) {
       secureLog("Failed to register identity", e);
+      alert(`Registration Error: ${e.message}. Please check your internet connection or session code.`);
     }
   };
 

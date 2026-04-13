@@ -35,7 +35,7 @@
             "$sessionId": {
                 ".read": true,
                 "$nameKey": {
-                    ".write": "root.child('active_session/id').val() === $sessionId && root.child('active_session/status').val() !== 'ended'",
+                    ".write": "newData.isString() && newData.val().length > 0",
                     ".validate": "newData.isString() && newData.val().length > 0"
                 }
             }
