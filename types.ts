@@ -25,6 +25,7 @@ export interface Assessment {
   creatorId?: string;
   preventMultipleResponses?: boolean;
   hasLobby?: boolean;
+  requireStudentName?: boolean;
 }
 
 export interface Session {
@@ -40,6 +41,7 @@ export interface Session {
   pausedAt?: number;
   isStarted: boolean;
   preventMultipleResponses?: boolean;
+  requireStudentName?: boolean;
 }
 
 export type UserRole = 'FACULTY' | 'STUDENT' | null;

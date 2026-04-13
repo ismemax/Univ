@@ -135,6 +135,7 @@ const App: React.FC = () => {
         startTime: Date.now(),
         isStarted: !assessment.hasLobby,
         preventMultipleResponses: assessment.preventMultipleResponses ?? true, // Default to true for Academic integrity
+        requireStudentName: assessment.requireStudentName || false,
       };
 
       // Ensure we clear any old active session reference first
@@ -155,7 +156,7 @@ const App: React.FC = () => {
     setView('FACULTY_EDIT');
   };
 
-  const handleStudentSubmit = async (responseIndex: any) => {
+  const handleStudentSubmit = async (responseIndex: any, studentName?: string) => {
     const sessionRef = ref(db, 'active_session');
 
     try {
@@ -173,6 +174,13 @@ const App: React.FC = () => {
 
       const updates: any = {};
       updates['participantsCount'] = (session.participantsCount || 0) + 1;
+
+      // Store named response if available
+      if (studentName) {
+        const namedResponses = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].namedResponses) || [];
+        const secureName = sanitizeInput(studentName);
+        updates[`allResponses/${qIdx}/namedResponses`] = [...namedResponses, { name: secureName, answer: responseIndex }];
+      }
 
       if (typeof responseIndex === 'number') {
         const currentCount = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx][responseIndex]) || 0;

@@ -23,6 +23,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
   const [activeIndex, setActiveIndex] = useState(0);
   const [preventMultiple, setPreventMultiple] = useState(initialData?.preventMultipleResponses || true);
   const [hasLobby, setHasLobby] = useState(initialData?.hasLobby || false);
+  const [requireName, setRequireName] = useState(initialData?.requireStudentName || false);
 
   const activeQ = questions[activeIndex];
 
@@ -65,7 +66,8 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
     createdAt: initialData?.createdAt || Date.now(),
     isDraft,
     preventMultipleResponses: preventMultiple,
-    hasLobby
+    hasLobby,
+    requireStudentName: requireName
   });
 
   const validate = () => {
@@ -127,6 +129,10 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
             <label className="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" checked={hasLobby} onChange={() => setHasLobby(!hasLobby)} className="accent-umak-blue w-4 h-4" />
               <span className="text-[10px] font-extrabold text-slate-600 uppercase">Join Lobby</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={requireName} onChange={() => setRequireName(!requireName)} className="accent-umak-blue w-4 h-4" />
+              <span className="text-[10px] font-extrabold text-slate-600 uppercase">Collect Student Name</span>
             </label>
           </div>
         </div>

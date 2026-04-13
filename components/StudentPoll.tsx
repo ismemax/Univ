@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 
 interface StudentPollProps {
   session: Session;
-  onSubmit: (response: any) => void;
+  onSubmit: (response: any, studentName?: string) => void;
   onFinished: () => void;
 }
 
@@ -17,6 +17,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [alreadyVoted, setAlreadyVoted] = useState(false);
+  const [studentName, setStudentName] = useState('');
+  const [isNameSet, setIsNameSet] = useState(!session.requireStudentName);
 
   // Initialize timeLeft
   const getInitialTime = () => {
@@ -86,7 +88,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     }
 
     const secureResponse = typeof selectedOption === 'string' ? sanitizeInput(selectedOption) : selectedOption;
-    onSubmit(secureResponse);
+    onSubmit(secureResponse, session.requireStudentName ? studentName : undefined);
     setHasSubmitted(true);
   };
 
@@ -305,6 +307,46 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     );
   }
 
+  if (!isNameSet && session.requireStudentName) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-20">
+        <div className="bg-white border-2 border-slate-200 rounded-[40px] shadow-2xl p-10 text-center">
+          <div className="w-20 h-20 bg-umak-blue/5 rounded-2xl flex items-center justify-center mx-auto mb-8">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-umak-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Student Identity</h2>
+          <p className="text-slate-600 font-bold mb-10 text-sm leading-relaxed uppercase tracking-widest">The instructor has requested participant identification for this academic session.</p>
+          
+          <div className="space-y-6">
+            <div className="space-y-2 text-left">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Legal Name</label>
+              <input
+                type="text"
+                placeholder="Last Name, First Name M.I."
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                className="w-full bg-slate-50 border-2 border-slate-100 py-4 px-6 rounded-2xl text-slate-900 font-bold focus:border-umak-blue focus:ring-4 focus:ring-umak-blue/5 transition-all outline-none text-center"
+                autoFocus
+              />
+            </div>
+            
+            <button
+              onClick={() => {
+                if (studentName.trim().length < 3) return alert('Please enter your full name (minimum 3 characters)');
+                setIsNameSet(true);
+              }}
+              className="w-full bg-umak-blue text-white font-black py-5 rounded-2xl hover:bg-umak-navy transition-all shadow-xl shadow-umak-blue/20 uppercase text-xs tracking-[0.2em]"
+            >
+              Continue to Assessment
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (session.status === 'waiting') {
     return (
       <div className="max-w-xl mx-auto px-6 py-20 text-center">
@@ -319,7 +361,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
             <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
           </div>
           <h2 className="text-3xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Connected</h2>
-          <p className="text-slate-600 font-bold mb-10 text-lg">You have successfully joined the session. Please wait for the instructor to start the assessment.</p>
+          <p className="text-slate-600 font-bold mb-2 text-lg">You have successfully joined the session.</p>
+          <p className="text-umak-blue/60 font-black text-[10px] uppercase tracking-widest mb-10 italic">Logged in as: {studentName || 'Anonymous Participant'}</p>
         </div>
       </div>
     );
