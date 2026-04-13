@@ -84,9 +84,10 @@ const App: React.FC = () => {
     const hostOfId = safeStorage.getItem('umak_host_of');
     let attendanceUnsubscribe: (() => void) | null = null;
 
-    if (activeSession?.id && hostOfId === activeSession.id) {
-       const attendanceRef = ref(db, `attendance/${activeSession.id}`);
-       attendanceUnsubscribe = onValue(attendanceRef, (snapshot) => {
+    if (activeSession?.accessCode && hostOfId === activeSession.id) {
+       const attendanceRef = ref(db, `attendance/${activeSession.id}`); // Wait, should I use accessCode here? Yes.
+       const targetRef = ref(db, `attendance/${activeSession.accessCode}`);
+       attendanceUnsubscribe = onValue(targetRef, (snapshot) => {
          const identities = snapshot.exists() ? snapshot.val() : {};
          setActiveSession(prev => {
             if (!prev) return null;
@@ -217,9 +218,9 @@ const App: React.FC = () => {
 
   const handleRegisterIdentity = async (name: string, sessionId?: string) => {
     try {
-      const targetSessionId = sessionId || activeSession?.id || studentSession?.id;
-      if (!targetSessionId) {
-        secureLog("Cannot register identity: No target session ID found.");
+      const targetCode = activeSession?.accessCode || studentSession?.accessCode || sessionId;
+      if (!targetCode) {
+        secureLog("Cannot register identity: No target access code found.");
         return;
       }
 
@@ -229,16 +230,16 @@ const App: React.FC = () => {
 
       // Sanitization for Firebase Keys
       const nameKey = secureName.replace(/[.$#[\]/]/g, '_');
-      secureLog(`Registering attendance for session ${targetSessionId}: ${secureName}`);
+      secureLog(`Registering attendance for session ${targetCode}: ${secureName}`);
 
-      // Use a dedicated top-level node for attendance to avoid session state conflicts
-      const attendanceRef = ref(db, `attendance/${targetSessionId}/${nameKey}`);
+      // Use the visible accessCode as the key to prevent internal ID mismatches
+      const attendanceRef = ref(db, `attendance/${targetCode}/${nameKey}`);
       await set(attendanceRef, secureName);
       
       secureLog("Attendance registered successfully.");
     } catch (e: any) {
       secureLog("Failed to register identity", e);
-      alert(`Registration Error: ${e.message}. Please check your internet connection or session code.`);
+      alert(`Registration Error: ${e.message}`);
     }
   };
 
