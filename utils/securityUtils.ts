@@ -62,6 +62,22 @@ export const markUserResponded = (sessionId: string, questionIndex: number): voi
 };
 
 /**
+ * Checks if the user has already been counted as a participant for this session.
+ */
+export const hasUserJoined = (sessionId: string): boolean => {
+    const key = `umak_join_${sessionId}`;
+    return localStorage.getItem(key) === 'true';
+};
+
+/**
+ * Marks the user as an active participant for this session.
+ */
+export const markUserJoined = (sessionId: string): void => {
+    const key = `umak_join_${sessionId}`;
+    localStorage.setItem(key, 'true');
+};
+
+/**
  * Conditional logger that only prints in development mode.
  * Following "Disable debug logs in production" practice.
  */

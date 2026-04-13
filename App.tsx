@@ -143,14 +143,20 @@ const App: React.FC = () => {
 
       const qIdx = session.currentQuestionIndex || 0;
 
-      // 1. Session Integrity Check (Defensive)
-      const { validateSessionIntegrity, sanitizeInput } = await import('./utils/securityUtils');
+      // 1. Session Integrity & Participation Tracking
+      const { validateSessionIntegrity, sanitizeInput, hasUserJoined, markUserJoined } = await import('./utils/securityUtils');
+      
       if (!validateSessionIntegrity(session.id)) {
         throw new Error("Security Violation: Session fingerprint mismatch.");
       }
 
       const updates: any = {};
-      updates['participantsCount'] = (session.participantsCount || 0) + 1;
+      
+      // Only increment participant count if this is the student's first response in THIS session
+      if (!hasUserJoined(session.id)) {
+        updates['participantsCount'] = (session.participantsCount || 0) + 1;
+        markUserJoined(session.id);
+      }
 
       // Store named response if available
       if (studentName) {
