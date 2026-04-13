@@ -27,10 +27,6 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onLogin, onDashboa
         </div>
       </div>
 
-      <nav className="hidden lg:flex items-center gap-8 text-slate-500 font-semibold text-sm">
-        <button onClick={onHome} className="hover:text-umak-blue transition-colors">Home</button>
-        <button onClick={onDashboard} className="hover:text-umak-blue transition-colors">Questionnaires</button>
-      </nav>
 
       <div className="flex items-center gap-4">
         {currentUser ? (
