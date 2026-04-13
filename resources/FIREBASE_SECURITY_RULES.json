@@ -5,7 +5,7 @@
             // Rule: Allow write if creating a new session (!data.exists), 
             // or if clearing an old one (newData == null), 
             // or if the current session is in a modifiable state (active/waiting/ended).
-            ".write": "!data.exists() || !newData.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'waiting' || data.child('status').val() === 'ended'",
+            ".write": "!data.exists() || !newData.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'paused' || data.child('status').val() === 'waiting' || data.child('status').val() === 'ended'",
             "participantsCount": {
                 ".validate": "newData.isNumber() && newData.val() >= 0"
             },

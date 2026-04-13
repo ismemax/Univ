@@ -30,8 +30,6 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onLogin, onDashboa
       <nav className="hidden lg:flex items-center gap-8 text-slate-500 font-semibold text-sm">
         <button onClick={onHome} className="hover:text-umak-blue transition-colors">Home</button>
         <button onClick={onDashboard} className="hover:text-umak-blue transition-colors">Questionnaires</button>
-        <a href="#" className="hover:text-umak-blue transition-colors">Academic Calendar</a>
-        <a href="#" className="hover:text-umak-blue transition-colors">Support</a>
       </nav>
 
       <div className="flex items-center gap-4">
@@ -48,14 +46,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onHome, onLogin, onDashboa
               Sign Out
             </button>
           </div>
-        ) : (
-          <button
-            onClick={onLogin}
-            className="bg-umak-blue text-white px-6 py-2 rounded-md font-bold text-sm shadow-sm hover:bg-umak-navy hover:shadow-md transition-all active:scale-95"
-          >
-            Portal Login
-          </button>
-        )}
+        ) : null}
       </div>
     </header>
   );

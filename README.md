@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# UMak Academic Questionnaire System
 
-# Run and deploy your AI Studio app
+## 🌟 Overview
+The **UMak Academic Questionnaire System** is a professional-grade classroom assessment platform designed for the University of Makati. It enables instructors to conduct live, real-time assessments with instant data visualization, automated grading/feedback, and institutional reporting.
 
-This contains everything you need to run your app locally.
+## 🚀 Quick Start
+### Installation
+1. Clone the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up your `.env.local` with Firebase credentials.
+4. Launch the application:
+   ```bash
+   npm run dev
+   ```
 
-View your app in AI Studio: https://ai.studio/apps/drive/1gu2jOF8DPQ4muBZrh3lgcSKvEWjZbl6D
+### Basic Usage
+- **Instructors**: Navigate to **Faculty Access** to create and launch assessments. Distribute the generated Access Code to your students.
+- **Students**: Enter the **Access Code** or scan the **QR Code** on the home screen to participate and view live results.
 
-## Run Locally
+## 📁 Proper Software Documentation
+Detailed documentation is categorized into the following key components in the `docs/` directory:
 
-**Prerequisites:**  Node.js
+| Component | Description |
+| :--- | :--- |
+| **[INDEX.md](docs/INDEX.md)** | Main Documentation Entry Point |
+| **[API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)** | Data Schemas & Interaction Patterns |
+| **[SYSTEM_DOCUMENTATION.md](docs/SYSTEM_DOCUMENTATION.md)** | Architecture & Data Models |
+| **[USER_GUIDE.md](docs/USER_GUIDE.md)** | Installation & Operational Manuals |
+| **[RELEASE_NOTES.md](docs/RELEASE_NOTES.md)** | Version History & Bug Fixes |
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+*Developed for academic excellence at the University of Makati.*
