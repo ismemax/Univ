@@ -24,6 +24,7 @@ const App: React.FC = () => {
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [studentSession, setStudentSession] = useState<Session | null>(null);
   const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
+  const [identities, setIdentities] = useState<Record<string, string>>({});
   const [joinAttempts, setJoinAttempts] = useState(0);
   const [joinCooldown, setJoinCooldown] = useState<number | null>(null);
 
@@ -85,14 +86,10 @@ const App: React.FC = () => {
     let attendanceUnsubscribe: (() => void) | null = null;
 
     if (activeSession?.accessCode && hostOfId === activeSession.id) {
-       const attendanceRef = ref(db, `attendance/${activeSession.id}`); // Wait, should I use accessCode here? Yes.
        const targetRef = ref(db, `attendance/${activeSession.accessCode}`);
        attendanceUnsubscribe = onValue(targetRef, (snapshot) => {
-         const identities = snapshot.exists() ? snapshot.val() : {};
-         setActiveSession(prev => {
-            if (!prev) return null;
-            return { ...prev, identities };
-         });
+         const data = snapshot.exists() ? snapshot.val() : {};
+         setIdentities(data);
        });
     }
 
@@ -323,12 +320,16 @@ const App: React.FC = () => {
           />;
         case 'FACULTY_LIVE':
           return activeSession ? (
-            <LiveSession session={activeSession} onEnd={() => {
-              set(ref(db, 'active_session'), null); // Correctly using set from firebase logic
-              setActiveSession(null);
-              safeStorage.removeItem('umak_host_of');
-              setView('HOME');
-            }} />
+            <LiveSession 
+              session={{ ...activeSession, identities }} 
+              onEnd={() => {
+                set(ref(db, 'active_session'), null); // Correctly using set from firebase logic
+                setActiveSession(null);
+                setIdentities({});
+                safeStorage.removeItem('umak_host_of');
+                setView('HOME');
+              }} 
+            />
           ) : (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
               <div className="flex flex-col items-center gap-4">
