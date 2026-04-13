@@ -203,18 +203,24 @@ const App: React.FC = () => {
     }
   };
 
-  const handleRegisterIdentity = async (name: string) => {
+  const handleRegisterIdentity = async (name: string, sessionId?: string) => {
     try {
+      const targetSessionId = sessionId || activeSession?.id || studentSession?.id;
+      if (!targetSessionId) {
+        secureLog("Cannot register identity: No target session ID found.");
+        return;
+      }
+
       const { sanitizeInput } = await import('./utils/securityUtils');
       const secureName = sanitizeInput(name);
-      if (!secureName || !activeSession?.id) return;
+      if (!secureName) return;
 
       // Sanitization for Firebase Keys
       const nameKey = secureName.replace(/[.$#[\]/]/g, '_');
-      secureLog(`Registering attendance for session ${activeSession.id}: ${secureName}`);
+      secureLog(`Registering attendance for session ${targetSessionId}: ${secureName}`);
 
       // Use a dedicated top-level node for attendance to avoid session state conflicts
-      const attendanceRef = ref(db, `attendance/${activeSession.id}/${nameKey}`);
+      const attendanceRef = ref(db, `attendance/${targetSessionId}/${nameKey}`);
       await set(attendanceRef, secureName);
       
       secureLog("Attendance registered successfully.");

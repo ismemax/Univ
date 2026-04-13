@@ -7,12 +7,12 @@ import { safeStorage } from '../utils/storageUtils';
 
 interface StudentPollProps {
   session: Session;
-  onRegister: (name: string) => void;
+  onRegister: (name: string, sessionId: string) => void;
   onSubmit: (response: any, studentName?: string) => void;
   onFinished: () => void;
 }
 
-const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished }) => {
+const StudentPoll: React.FC<StudentPollProps> = ({ session, onRegister, onSubmit, onFinished }) => {
   const currentIdx = session.currentQuestionIndex || 0;
   const activeQ = session.questions[currentIdx];
 
@@ -28,7 +28,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   // Re-sync identity if already set (handles refresh/re-join visibility)
   useEffect(() => {
     if (isNameSet && studentName && session.id) {
-       onRegister(studentName);
+       onRegister(studentName, session.id);
     }
   }, []);
 
@@ -360,7 +360,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                 
                 // Background operations
                 safeStorage.setItem(`umak_name_${session.id}`, studentName);
-                onRegister(studentName);
+                onRegister(studentName, session.id);
               }}
               className="w-full bg-umak-blue text-white font-black py-5 rounded-2xl hover:bg-umak-navy transition-all shadow-xl shadow-umak-blue/20 uppercase text-xs tracking-[0.2em] relative z-50"
             >
