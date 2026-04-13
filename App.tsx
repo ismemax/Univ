@@ -57,8 +57,8 @@ const App: React.FC = () => {
 
       setActiveSession(session);
 
-      // Restore view only if this specific device is the host of the active session
-      if (session && session.status === 'active' && !studentSession) {
+      // Restore view only if this specific device is the host of the active session (All non-terminal states)
+      if (session && (session.status === 'active' || session.status === 'paused' || session.status === 'waiting') && !studentSession) {
         const hostOfId = localStorage.getItem('umak_host_of');
         if (hostOfId === session.id && view === 'HOME') {
           setView('FACULTY_LIVE');
