@@ -339,12 +339,20 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
                 placeholder="Last Name, First Name M.I."
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && studentName.trim().length >= 3) {
+                    setIsNameSet(true);
+                    safeStorage.setItem(`umak_name_${session.id}`, studentName);
+                    onRegister(studentName);
+                  }
+                }}
                 className="w-full bg-slate-50 border-2 border-slate-100 py-4 px-6 rounded-2xl text-slate-900 font-bold focus:border-umak-blue focus:ring-4 focus:ring-umak-blue/5 transition-all outline-none text-center"
                 autoFocus
               />
             </div>
             
             <button
+              type="button"
               onClick={() => {
                 if (studentName.trim().length < 3) return alert('Please enter your full name (minimum 3 characters)');
                 
@@ -367,20 +375,27 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
 
   if (session.status === 'waiting') {
     return (
-      <div className="max-w-xl mx-auto px-6 py-20 text-center">
-        <div className="bg-white border-2 border-slate-200 rounded-3xl p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
-            <div className="bg-umak-blue h-full w-1/3 animate-[loading_2s_infinite]"></div>
+      <div className="min-h-screen bg-umak-blue px-6 flex items-center justify-center py-20">
+        <div className="max-w-xl w-full bg-white border-2 border-slate-200 rounded-[40px] p-12 shadow-2xl relative overflow-hidden text-center animate-in zoom-in-95 duration-500">
+          <div className="absolute top-0 left-0 w-full h-2 bg-slate-100">
+            <div className="bg-umak-yellow h-full w-1/3 animate-[loading_2s_infinite] shadow-sm"></div>
           </div>
-          <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8 relative">
+          <div className="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-10 relative">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-umak-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-sm flex items-center justify-center text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
           </div>
-          <h2 className="text-3xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Connected</h2>
-          <p className="text-slate-600 font-bold mb-2 text-lg">You have successfully joined the session.</p>
-          <p className="text-umak-blue/60 font-black text-[10px] uppercase tracking-widest mb-10 italic">Logged in as: {studentName || 'Anonymous Participant'}</p>
+          <h2 className="text-4xl font-serif font-bold text-umak-navy mb-4 uppercase tracking-tight">Connected</h2>
+          <p className="text-slate-600 font-bold mb-2 text-lg">Identity Verified Successully</p>
+          <div className="bg-slate-50 border border-slate-100 py-3 px-6 rounded-2xl inline-block mb-10">
+            <p className="text-umak-blue font-black text-xs uppercase tracking-widest leading-relaxed">Logged in as: {studentName}</p>
+          </div>
+          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest animate-pulse max-w-xs mx-auto">Please maintain your browser connection. The instructor will launch the assessment content shortly.</p>
         </div>
       </div>
     );
