@@ -24,7 +24,6 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
   const activeQ = session.questions[currentIdx];
 
   const [timeLeft, setTimeLeft] = useState(activeQ.timeLimit);
-  const [isPaused, setIsPaused] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Sync state when initialSession changes
@@ -34,7 +33,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
 
   // Timer Effect
   useEffect(() => {
-    if (session.status === 'ended' || isPaused || session.status === 'waiting' || !session.startTime) return;
+    if (session.status === 'ended' || session.status === 'paused' || session.status === 'waiting' || !session.startTime) return;
 
     const timer = setInterval(() => {
       const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
@@ -50,7 +49,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [session.status, isPaused, session.startTime, activeQ.timeLimit]);
+  }, [session.status, session.startTime, activeQ.timeLimit]);
 
   const chartData = useMemo(() => {
     if (!activeQ || !activeQ.options || activeQ.options.length === 0) return [];
@@ -92,9 +91,31 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
     await update(sessionRef, {
       currentQuestionIndex: currentIdx + 1,
       startTime: Date.now(), // Reset timer for next question
-      status: 'active'
+      status: 'active',
+      pausedAt: null
     });
     setTimeLeft(session.questions[currentIdx + 1].timeLimit);
+  };
+
+  const togglePause = async () => {
+    const sessionRef = ref(db, 'active_session');
+    const isCurrentlyPaused = session.status === 'paused';
+
+    if (isCurrentlyPaused) {
+      // Resume logic: Shift startTime by the duration it was paused
+      const pausedDuration = Date.now() - (session.pausedAt || Date.now());
+      await update(sessionRef, {
+        status: 'active',
+        startTime: session.startTime + pausedDuration,
+        pausedAt: null
+      });
+    } else {
+      // Pause logic: Record when it was paused
+      await update(sessionRef, {
+        status: 'paused',
+        pausedAt: Date.now()
+      });
+    }
   };
 
   const handlePrintPDF = async () => {
@@ -298,8 +319,8 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white rounded-xl p-6 flex flex-col items-center justify-center border-2 border-slate-100">
                 <span className="text-xs font-black text-slate-500 uppercase mb-2">Status</span>
-                <span className={`text-4xl font-black uppercase tracking-tighter ${isSessionEnded ? 'text-red-500' : 'text-slate-900'}`}>
-                  {isSessionEnded ? 'Ended' : `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`}
+                <span className={`text-4xl font-black uppercase tracking-tighter ${isSessionEnded ? 'text-red-500' : session.status === 'paused' ? 'text-amber-600' : 'text-slate-900'}`}>
+                  {isSessionEnded ? 'Ended' : session.status === 'paused' ? 'Paused' : `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`}
                 </span>
               </div>
               <div className="bg-white border-2 border-umak-blue/10 rounded-xl p-6 flex flex-col items-center justify-center">
@@ -320,13 +341,13 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session: initialSession, onEn
                 ) : (
                   <>
                     <button
-                      onClick={() => setIsPaused(!isPaused)}
-                      className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${isPaused
+                      onClick={togglePause}
+                      className={`flex-1 py-4 rounded-xl font-black uppercase text-xs tracking-widest border-2 transition-all ${session.status === 'paused'
                         ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                         }`}
                     >
-                      {isPaused ? 'Resume' : 'Pause'}
+                      {session.status === 'paused' ? 'Resume' : 'Pause'}
                     </button>
                     {currentIdx < session.questions.length - 1 && (
                       <button

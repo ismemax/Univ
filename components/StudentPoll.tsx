@@ -44,8 +44,13 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
   useEffect(() => {
     if (!session || !activeQ) return;
 
-    if (session.status !== 'active' || !session.startTime) {
+    if (session.status !== 'active' && session.status !== 'paused') {
       if (session.status === 'waiting') setTimeLeft(activeQ.timeLimit);
+      return;
+    }
+
+    if (session.status === 'paused') {
+      // Don't start interval if paused, but also don't reset time
       return;
     }
 
@@ -63,7 +68,7 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [session.status, session.startTime, session.id, currentIdx]);
+  }, [session.status, session.startTime, session.id, currentIdx, activeQ.timeLimit]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -358,9 +363,9 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
           <span className="text-xs font-black text-umak-blue uppercase tracking-[0.2em] bg-umak-blue/5 px-3 py-1 rounded-md">
             {session.status === 'waiting' ? 'LOBBY' : `QUESTION ${currentIdx + 1} OF ${session.questions.length}`}
           </span>
-          <div className="bg-red-50 text-red-600 px-4 py-1.5 rounded-xl text-sm font-black flex items-center gap-2 border border-red-100">
-            <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-pulse shadow-sm shadow-red-600/50"></span>
-            {session.status === 'waiting' ? '--:--' : formatTime(timeLeft)}
+          <div className={`${session.status === 'paused' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-red-50 text-red-600 border-red-100'} px-4 py-1.5 rounded-xl text-sm font-black flex items-center gap-2 border transition-colors`}>
+            <span className={`w-2.5 h-2.5 ${session.status === 'paused' ? 'bg-amber-600' : 'bg-red-600 animate-pulse'} rounded-full shadow-sm`}></span>
+            {session.status === 'waiting' ? '--:--' : session.status === 'paused' ? 'PAUSED' : formatTime(timeLeft)}
           </div>
         </div>
 
@@ -380,9 +385,13 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
             {renderInput()}
             <button
               onClick={handleSubmit}
-              className="w-full bg-umak-blue text-white py-5 rounded-2xl font-black mt-8 shadow-xl shadow-umak-blue/30 transition-all active:scale-[0.98] uppercase tracking-widest text-lg"
+              disabled={session.status === 'paused'}
+              className={`w-full py-5 rounded-2xl font-black mt-8 shadow-xl transition-all uppercase tracking-widest text-lg ${session.status === 'paused'
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                  : 'bg-umak-blue text-white shadow-umak-blue/30 active:scale-[0.98]'
+                }`}
             >
-              Submit Response
+              {session.status === 'paused' ? 'Submission Paused' : 'Submit Response'}
             </button>
           </div>
         ) : (

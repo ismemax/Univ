@@ -37,6 +37,7 @@ export interface Session {
   // Responses will now be grouped by question index
   allResponses: Record<number, Record<string, any>>;
   startTime: number;
+  pausedAt?: number;
   isStarted: boolean;
   preventMultipleResponses?: boolean;
 }
