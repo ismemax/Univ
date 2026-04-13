@@ -189,19 +189,16 @@ const App: React.FC = () => {
   };
 
   const handleRegisterIdentity = async (name: string) => {
-    const sessionRef = ref(db, 'active_session');
     try {
-      const snapshot = await get(sessionRef);
-      const session: Session = snapshot.val();
-      if (!session) return;
-
+      const { sanitizeInput } = await import('./utils/securityUtils');
       const secureName = sanitizeInput(name);
-      const currentIdentities = session.identities || [];
-      
-      if (currentIdentities.includes(secureName)) return;
+      if (!secureName) return;
 
-      await update(sessionRef, {
-        identities: [...currentIdentities, secureName]
+      // RTDB keys cannot contain: . $ # [ ] /
+      const nameKey = secureName.replace(/[.$#[\]/]/g, '_');
+
+      await update(ref(db, `active_session/identities`), {
+        [nameKey]: true
       });
     } catch (e) {
       secureLog("Failed to register identity", e);

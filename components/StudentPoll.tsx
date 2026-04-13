@@ -339,9 +339,13 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onSubmit, onFinished
             <button
               onClick={() => {
                 if (studentName.trim().length < 3) return alert('Please enter your full name (minimum 3 characters)');
+                
+                // Proceed immediately for better UX responsiveness
+                setIsNameSet(true);
+                
+                // Background operations
                 localStorage.setItem(`umak_name_${session.id}`, studentName);
                 onRegister(studentName);
-                setIsNameSet(true);
               }}
               className="w-full bg-umak-blue text-white font-black py-5 rounded-2xl hover:bg-umak-navy transition-all shadow-xl shadow-umak-blue/20 uppercase text-xs tracking-[0.2em]"
             >
