@@ -1,7 +1,7 @@
 
 /// <reference types="vite/client" />
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set, update, get } from "firebase/database";
+import { getDatabase, ref, onValue, set, update, get, ServerValue } from "firebase/database";
 
 // Firebase project configuration
 // We use VITE_ environment variables for better security and portability.
@@ -30,4 +30,4 @@ try {
     console.error("Firebase initialization failed:", e);
 }
 
-export { db, ref, onValue, set, update, get };
+export { db, ref, onValue, set, update, get, ServerValue };
