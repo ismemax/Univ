@@ -161,8 +161,8 @@ const App: React.FC = () => {
       
       // Only increment participant count if this is the student's first response in THIS session
       if (!hasUserJoined(session.id)) {
-        const { ServerValue } = await import('./firebase');
-        updates['participantsCount'] = ServerValue.increment(1);
+        const { increment } = await import('./firebase');
+        updates['participantsCount'] = increment(1);
         markUserJoined(session.id);
       }
 
@@ -174,8 +174,8 @@ const App: React.FC = () => {
       }
 
       if (typeof responseIndex === 'number') {
-        const { ServerValue } = await import('./firebase');
-        updates[`allResponses/${qIdx}/${responseIndex}`] = ServerValue.increment(1);
+        const { increment } = await import('./firebase');
+        updates[`allResponses/${qIdx}/${responseIndex}`] = increment(1);
       } else if (Array.isArray(responseIndex)) {
         const currentRankings = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].rankings) || [];
         updates[`allResponses/${qIdx}/rankings`] = [...currentRankings, responseIndex];
