@@ -596,7 +596,10 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                     </svg>
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
-                    No response data<br />captured yet
+                    {activeQ.type === 'SHORT_ANSWER' || activeQ.type === 'ESSAY'
+                      ? <>Qualitative responses<br />will appear below</>
+                      : <>No response data<br />captured yet</>
+                    }
                   </p>
                 </div>
               )}
