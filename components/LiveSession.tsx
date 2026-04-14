@@ -331,7 +331,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                   </span>
                   {!isSessionEnded && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-umak-navy leading-tight break-words">
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-umak-navy leading-tight break-all sm:break-words">
                   {session.status === 'waiting' ? (
                     <span className="text-slate-300 italic flex items-center gap-3">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -517,10 +517,10 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                 {session.status === 'waiting' ? (
                   <p className="text-slate-300 italic text-center text-sm font-bold">Waiting for activation...</p>
                 ) : session.allResponses && session.allResponses[currentIdx]?.text?.length > 0 ? (
-                  session.allResponses[currentIdx].text.slice().reverse().map((txt: string, i: number) => (
-                    <div key={i} className="bg-slate-50 border border-slate-100 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2 overflow-hidden">
-                      <p className="text-slate-800 font-bold text-sm leading-relaxed break-words">{txt}</p>
-                      <span className="text-[9px] font-black text-slate-400 uppercase mt-2 block tracking-widest">Received recently</span>
+                  session.allResponses[currentIdx].text.slice().reverse().map((res: any, resIdx: number) => (
+                    <div key={resIdx} className="bg-slate-50 border border-slate-100 rounded-xl p-4 animate-in fade-in slide-in-from-bottom-2">
+                      <p className="text-sm font-bold text-slate-900 leading-relaxed mb-1 break-all sm:break-words">{res.text || res}</p>
+                      <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Received Recently</span>
                     </div>
                   ))
                 ) : (

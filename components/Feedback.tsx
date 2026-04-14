@@ -106,8 +106,8 @@ const Feedback: React.FC<FeedbackProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 transform scale-100 transition-transform">
+    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-[90%] sm:max-w-sm w-full overflow-hidden border border-slate-200 transform scale-100 transition-transform">
         <div className={`h-2.5 ${type === 'error' ? 'bg-rose-500' : type === 'warning' ? 'bg-amber-500' : 'bg-[#004A98]'}`} />
         <div className="p-8">
           <div className="flex flex-col items-center text-center mb-6">
