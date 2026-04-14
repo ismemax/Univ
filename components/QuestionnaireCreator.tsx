@@ -79,7 +79,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
     }
     for (const q of questions) {
       if (!q.text.trim()) { 
-        showFeedback('Every academic prompt must contain text for student clearity.', 'warning', 'Incomplete Question'); 
+        showFeedback('Every academic prompt must contain text for student clarity.', 'warning', 'Incomplete Question'); 
         return false; 
       }
       if ((q.type === QuestionType.MULTIPLE_CHOICE || q.type === QuestionType.RANKING) && q.options.some(o => !o.trim())) {
@@ -88,6 +88,17 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
       }
     }
     return true;
+  };
+
+  // Helper for professional academic lettering (A, B... Z, AA, AB)
+  const getLetterLabel = (index: number) => {
+    let label = '';
+    let i = index;
+    while (i >= 0) {
+      label = String.fromCharCode((i % 26) + 65) + label;
+      i = Math.floor(i / 26) - 1;
+    }
+    return label;
   };
 
   return (
@@ -151,7 +162,7 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
 
       {/* Main Area */}
       <div className="flex-grow bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => {
@@ -166,12 +177,12 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
             </button>
             <div>
               <span className="text-[10px] font-extrabold text-umak-blue uppercase tracking-widest mb-1 block">UMAK ACADEMIC PORTAL</span>
-              <h2 className="text-3xl font-serif font-bold text-umak-navy uppercase tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-umak-navy uppercase tracking-tight leading-none">
                 {initialData ? 'Edit Assessment' : 'New Assessment'}
               </h2>
             </div>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-slate-100">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Question {activeIndex + 1} of {questions.length}</span>
           </div>
         </div>
@@ -234,9 +245,9 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
 
               <div className="grid gap-4">
                 {activeQ.options.map((opt, i) => (
-                  <div key={i} className="flex gap-4 animate-in fade-in slide-in-from-left-2">
-                    <div className="w-12 h-12 bg-umak-yellow rounded-xl flex items-center justify-center text-umak-navy font-black flex-shrink-0 text-lg shadow-sm border border-umak-yellow/20">
-                      {activeQ.type === QuestionType.RANKING ? i + 1 : String.fromCharCode(65 + i)}
+                  <div key={i} className="flex gap-2 sm:gap-4 animate-in fade-in slide-in-from-left-2">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-umak-yellow rounded-xl flex items-center justify-center text-umak-navy font-black flex-shrink-0 text-sm sm:text-lg shadow-sm border border-umak-yellow/20">
+                      {activeQ.type === QuestionType.RANKING ? i + 1 : getLetterLabel(i)}
                     </div>
                     <input
                       type="text"

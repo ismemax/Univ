@@ -323,7 +323,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
         {/* Left Side: Stats & Session Info */}
         <div className="flex-1 space-y-8">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-            <div className="flex justify-between items-start mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start mb-6 gap-6">
               <div className="flex-1 pr-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-extrabold text-umak-blue uppercase tracking-widest block">
@@ -331,7 +331,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                   </span>
                   {!isSessionEnded && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
                 </div>
-                <h2 className="text-3xl font-serif font-bold text-umak-navy leading-tight break-words">
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-umak-navy leading-tight break-words">
                   {session.status === 'waiting' ? (
                     <span className="text-slate-300 italic flex items-center gap-3">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -342,9 +342,9 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                   ) : activeQ.text}
                 </h2>
               </div>
-              <div className="text-right">
+              <div className="sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-6 sm:pt-0 border-slate-100">
                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-1">Access Code</span>
-                <div className="text-4xl font-black text-umak-blue tracking-widest">{session.accessCode}</div>
+                <div className="text-4xl sm:text-5xl font-black text-umak-blue tracking-tighter sm:tracking-widest">{session.accessCode}</div>
               </div>
             </div>
 

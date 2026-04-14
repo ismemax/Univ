@@ -83,7 +83,7 @@ const Feedback: React.FC<FeedbackProps> = ({
 
   if (!isModal) {
     return (
-      <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[1000] animate-fade-in px-4 w-full max-w-md pointer-events-none">
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in px-4 w-full max-w-md pointer-events-none">
         <div className={`pointer-events-auto flex items-start p-4 rounded-2xl border-2 shadow-2xl glass-panel ${bgColors[type]}`}>
           <div className={`flex-shrink-0 ${accentColors[type]}`}>
             {icons[type]}
