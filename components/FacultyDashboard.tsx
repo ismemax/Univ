@@ -12,6 +12,7 @@ interface FacultyDashboardProps {
 
 const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, onStartSession, onEditDraft }) => {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [filter, setFilter] = useState<'ALL' | 'DRAFTS'>('ALL');
 
   useEffect(() => {
     try {
@@ -52,24 +53,48 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
-          Create Questionnaire
+          Launch Questionnaire
+        </button>
+      </div>
+
+      <div className="flex items-center gap-4 mb-8 bg-slate-50 p-1.5 rounded-2xl w-fit border border-slate-100 shadow-inner">
+        <button
+          onClick={() => setFilter('ALL')}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${filter === 'ALL' ? 'bg-white text-umak-blue shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+        >
+          All Bundles
+        </button>
+        <button
+          onClick={() => setFilter('DRAFTS')}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest flex items-center gap-2 ${filter === 'DRAFTS' ? 'bg-white text-umak-blue shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+        >
+          Draft Vault
+          {assessments.filter(a => a.isDraft).length > 0 && (
+            <span className="bg-umak-yellow text-umak-navy px-1.5 py-0.5 rounded-md text-[8px] font-black">
+              {assessments.filter(a => a.isDraft).length}
+            </span>
+          )}
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {assessments.length === 0 ? (
+        {assessments.filter(a => filter === 'ALL' || a.isDraft).length === 0 ? (
           <div className="col-span-full py-24 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <h3 className="text-slate-500 font-black uppercase tracking-widest text-sm">No assessments found</h3>
-            <p className="text-slate-500 text-xs mt-1 font-medium">Ready to create your first academic questionnaire?</p>
+            <h3 className="text-slate-500 font-black uppercase tracking-widest text-sm">
+              {filter === 'ALL' ? 'No assessments found' : 'No drafts currently in vault'}
+            </h3>
+            <p className="text-slate-500 text-xs mt-1 font-medium">{filter === 'ALL' ? 'Ready to create your first academic questionnaire?' : 'All your work-in-progress assessments will appear here.'}</p>
           </div>
         ) : (
-          assessments.map((a) => {
-            if (!a || !a.id) return null;
+          assessments
+            .filter(a => filter === 'ALL' || a.isDraft)
+            .map((a) => {
+              if (!a || !a.id) return null;
             return (
               <div key={a.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative">
                 <div className="flex justify-between items-start mb-4">
