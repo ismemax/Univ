@@ -185,13 +185,6 @@ const App: React.FC = () => {
 
       const updates: any = {};
       
-      // Only increment participant count if this is the student's first response in THIS session
-      if (!hasUserJoined(session.id)) {
-        const { increment } = await import('./firebase');
-        updates['participantsCount'] = increment(1);
-        markUserJoined(session.id);
-      }
-
       // Store named response if available (Part of question analytics)
       if (studentName) {
         const namedResponses = (session.allResponses && session.allResponses[qIdx] && session.allResponses[qIdx].namedResponses) || [];
@@ -276,8 +269,17 @@ const App: React.FC = () => {
             showFeedback('This academic session has already concluded.', 'warning', 'Session Ended');
           } else {
             // Initialize fingerprint on join
-            const { validateSessionIntegrity } = await import('./utils/securityUtils');
+            const { validateSessionIntegrity, hasUserJoined, markUserJoined } = await import('./utils/securityUtils');
             validateSessionIntegrity(session.id);
+            
+            // Increment live participant count if first time joining this session
+            if (!hasUserJoined(session.id)) {
+                const { increment: dbIncrement } = await import('./firebase');
+                const sessionRef = ref(db, 'active_session');
+                await update(sessionRef, { participantsCount: dbIncrement(1) });
+                markUserJoined(session.id);
+            }
+
             setStudentSession(session);
             setView('STUDENT_POLL');
           }
