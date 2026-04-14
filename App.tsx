@@ -121,6 +121,7 @@ const App: React.FC = () => {
 
   const handleSaveDraft = (assessment: Assessment) => {
     saveToDatabase({ ...assessment, isDraft: true });
+    showFeedback("Draft saved automatically to your workspace.", "success", "Progress Secured");
     setView('FACULTY_DASHBOARD');
   };
 

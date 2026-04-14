@@ -150,7 +150,13 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
       <div className="flex-grow bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-4">
-            <button onClick={onCancel} className="text-slate-400 hover:text-umak-blue transition-colors p-2 -ml-2">
+            <button 
+              onClick={() => {
+                onSaveDraft(getFinalAssessment(true));
+              }} 
+              className="text-slate-400 hover:text-umak-blue transition-colors p-2 -ml-2"
+              title="Return and Save Draft"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
