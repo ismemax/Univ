@@ -6,19 +6,11 @@ import { useFeedback } from './FeedbackContext';
 interface HomeProps {
   setView: (v: ViewState) => void;
   onJoin: (code: string) => void;
+  onEnterFaculty: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ setView, onJoin }) => {
+const Home: React.FC<HomeProps> = ({ setView, onJoin, onEnterFaculty }) => {
   const { showFeedback } = useFeedback();
-  const [code, setCode] = useState('');
-
-  const handleJoinClick = () => {
-    if (code.length === 4) {
-      onJoin(code);
-    } else {
-      showFeedback('Please enter a valid 4-digit academic code.', 'warning', 'Invalid Code');
-    }
-  };
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center text-center">
@@ -46,12 +38,20 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin }) => {
           <p className="text-slate-500 mb-10 text-sm leading-relaxed text-center max-w-xs">
             Create and manage academic questionnaires, analyze student responses, and export detailed reports for your courses.
           </p>
-          <button
-            onClick={() => setView('FACULTY_CREATE')}
-            className="w-full bg-umak-navy text-white font-bold py-4 rounded-lg hover:bg-umak-blue transition-all uppercase text-xs tracking-widest shadow-lg shadow-umak-navy/20"
-          >
-            Create Questionnaire
-          </button>
+          <div className="flex flex-col gap-3 w-full">
+            <button
+              onClick={() => setView('FACULTY_CREATE')}
+              className="w-full bg-umak-blue text-white font-bold py-4 rounded-lg hover:bg-umak-navy transition-all uppercase text-xs tracking-widest shadow-lg shadow-umak-blue/20"
+            >
+              Create New
+            </button>
+            <button
+              onClick={onEnterFaculty}
+              className="w-full bg-white border border-umak-blue text-umak-blue font-bold py-4 rounded-lg hover:bg-blue-50 transition-all uppercase text-xs tracking-widest"
+            >
+              Drafts & Dashboard
+            </button>
+          </div>
         </div>
 
         {/* Student Portal */}
