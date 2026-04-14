@@ -39,3 +39,48 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
+/* Tooltip Styles */
+.tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-content {
+  visibility: hidden;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #01244E;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: normal;
+  width: 180px;
+  text-align: center;
+  z-index: 100;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #01244E transparent transparent transparent;
+}
+
+.tooltip-trigger:hover .tooltip-content {
+  visibility: visible;
+  opacity: 1;
+  bottom: 150%;
+}
+

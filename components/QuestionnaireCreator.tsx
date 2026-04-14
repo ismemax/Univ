@@ -130,17 +130,20 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
         <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100">
           <h4 className="text-[10px] font-black text-umak-blue uppercase tracking-widest mb-2">Global Settings</h4>
           <div className="space-y-4">
-            <label className="flex items-center gap-3 cursor-pointer">
+            <label className="flex items-center gap-3 cursor-pointer tooltip-trigger">
               <input type="checkbox" checked={preventMultiple} onChange={() => setPreventMultiple(!preventMultiple)} className="accent-umak-blue w-4 h-4" />
               <span className="text-[10px] font-extrabold text-slate-600 uppercase">One Response Limit</span>
+              <span className="tooltip-content">Ensures each student device can only submit a response once per question, preventing data duplication.</span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer">
+            <label className="flex items-center gap-3 cursor-pointer tooltip-trigger">
               <input type="checkbox" checked={hasLobby} onChange={() => setHasLobby(!hasLobby)} className="accent-umak-blue w-4 h-4" />
               <span className="text-[10px] font-extrabold text-slate-600 uppercase">Join Lobby</span>
+              <span className="tooltip-content">When active, students wait in a communal lobby until you officially start the academic session.</span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer">
+            <label className="flex items-center gap-3 cursor-pointer tooltip-trigger">
               <input type="checkbox" checked={requireName} onChange={() => setRequireName(!requireName)} className="accent-umak-blue w-4 h-4" />
               <span className="text-[10px] font-extrabold text-slate-600 uppercase">Collect Student Name</span>
+              <span className="tooltip-content">Mandates that students provide their full name before participating, essential for graded records.</span>
             </label>
           </div>
         </div>
