@@ -1,35 +1,96 @@
-# UMak Academic Questionnaire System
+# UMak Academic Questionnaire System: Professional Documentation
 
-## 🌟 Overview
-The **UMak Academic Questionnaire System** is a professional-grade classroom assessment platform designed for the University of Makati. It enables instructors to conduct live, real-time assessments with instant data visualization, automated grading/feedback, and institutional reporting.
+## 1. Executive Summary
+The University of Makati Academic Questionnaire System (UAQS) is a real-time, web-based platform designed to facilitate interactive academic assessments, polls, and research surveys within the university community. It provides faculty members with tools to create structured assessments and students with a low-friction interface for participation.
 
-## 🚀 Quick Start
-### Installation
-1. Clone the repository.
-2. Install dependencies:
+## 2. Quick Start and Installation
+
+### 2.1 Technical Requirements
+* Node.js (v16 or higher)
+* NPM or Yarn
+* Firebase Project (Realtime Database enabled)
+
+### 2.2 Installation Steps
+1. Clone the repository to your local machine.
+2. Install the necessary dependencies:
    ```bash
    npm install
    ```
-3. Set up your `.env.local` with Firebase credentials.
-4. Launch the application:
+3. Configure your environment variables in `.env.local`:
+   ```env
+   VITE_FIREBASE_API_KEY=your_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_domain
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_bucket
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   VITE_FIREBASE_DATABASE_URL=your_database_url
+   ```
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
-### Basic Usage
-- **Instructors**: Navigate to **Faculty Access** to create and launch assessments. Distribute the generated Access Code to your students.
-- **Students**: Enter the **Access Code** or scan the **QR Code** on the home screen to participate and view live results.
+## 3. System Architecture
 
-## 📁 Proper Software Documentation
-Detailed documentation is categorized into the following key components in the `docs/` directory:
+### 3.1 Technology Stack
+* Frontend Framework: React 18 with TypeScript
+* Build Tool: Vite
+* Real-time Database: Firebase Realtime Database (RTDB) for live session synchronization
+* Local Persistence: Browser LocalStorage for faculty-side assessment drafts and bundle management
+* PDF Generation: jsPDF for academic reporting
+* QR Integration: qrcode.react for session access
 
-| Component | Description |
-| :--- | :--- |
-| **[INDEX.md](docs/INDEX.md)** | Main Documentation Entry Point |
-| **[API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)** | Data Schemas & Interaction Patterns |
-| **[SYSTEM_DOCUMENTATION.md](docs/SYSTEM_DOCUMENTATION.md)** | Architecture & Data Models |
-| **[USER_GUIDE.md](docs/USER_GUIDE.md)** | Installation & Operational Manuals |
-| **[RELEASE_NOTES.md](docs/RELEASE_NOTES.md)** | Version History & Bug Fixes |
+### 3.2 Core Modules
+* Entry Portal (Home): Dual-entry system for Faculty and Students.
+* Faculty Dashboard: A management interface for organizational control of assessment bundles and work-in-progress drafts.
+* Questionnaire Creator: A comprehensive form builder supporting Multiple Choice, True/False, Rating Scales, Short Answer, Essay, and Ranking question types.
+* Live Session Control: A real-time instructor interface for controlling assessment flow, monitoring participation, and visualizing results.
+* Student Poll Interface: A responsive participant view for real-time response submission.
+* Global Feedback System: A unified notification and modal service managing all user-facing alerts and confirmations.
 
----
-*Developed for academic excellence at the University of Makati.*
+## 4. Features and Functionality
+
+### 4.1 Faculty Subsystem
+* Assessment Management: Create, edit, and delete assessment bundles.
+* Draft Vault: Automatic saving of work-in-progress assessments to prevent data loss during the creation process.
+* Real-time Control Panel: Ability to start/pause sessions, navigate between questions, and monitor live results.
+* Academic Reporting: On-demand generation of official PDF reports containing summarized assessment data and participant details.
+* Session Access: Automatic 4-digit access code generation and QR code display for student onboarding.
+
+### 4.2 Student Subsystem
+* Anonymous/Identified Participation: Flexible session configuration allowing for anonymous responses or verified name collection.
+* Real-time Synchronization: Instant updates as the instructor moves through the assessment.
+* Visual Feedback: Confirmation of successful submission and session progress tracking.
+
+## 5. Operational Evaluation
+
+### 5.1 Benefits (Pros)
+* Low Friction: Students join via simple 4-digit codes without requiring account registration.
+* Real-time Interaction: Synchronous data exchange between instructor and students enhances classroom engagement.
+* Visual Consistency: The interface adheres strictly to University of Makati branding guidelines, instilling academic trust.
+* Data Portability: Integrated PDF exporting allows for immediate archiving of academic records.
+* Resilience: Auto-save features and error boundary management ensure a stable user experience.
+
+### 5.2 Limitations (Cons)
+* Device Dependency: Faculty drafts are stored in LocalStorage, meaning work started on one device is not immediately accessible on another without manual sync.
+* Concurrent Session Capacity: The 4-digit access code system limits the architecture to 10,000 unique concurrent sessions globally.
+* Self-Reported Identity: Unless integrated with a university SSO, student names are self-reported and subject to human error or falsification.
+
+## 6. Security Profile
+
+### 6.1 Vulnerabilities
+* Brute-Force Attack Surface: The 4-digit access code is susceptible to automated guessing. While entry cooldowns are implemented, the low entropy of the code remains a technical risk.
+* Client-side Data Integrity: LocalStorage is accessible via browser dev tools, allowing manipulation of stored drafts or session pointers.
+* XSS (Cross-Site Scripting): Dynamic rendering of user-provided text requires strict sanitation to prevent execution of malicious code.
+
+### 6.2 Implemented Mitigations
+* Input Sanitation: All user-provided strings pass through a sanitization utility before rendering or persistence.
+* Join Cooldowns: Implementation of a rate-limiting mechanism in the join flow to prevent rapid-fire access code attempts.
+* Firebase Security Rules: Granular database rules ensure data isolation between participants and instructors.
+* Secure Logging: Internal utilities for obscure logging of sensitive operations to prevent console-based leaks.
+
+## 7. Strategic Maintenance Roadmap
+1. Cloud Sync Integration: Moving faculty drafts from LocalStorage to a cloud-authenticated store.
+2. SSO Integration: Implementing University-wide single sign-on for verified identity.
+3. Advanced Analytics: Expanding the reporting engine to include longitudinal data analysis.

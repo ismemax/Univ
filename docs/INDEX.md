@@ -2,7 +2,7 @@
 
 Welcome to the official documentation for the **UMak Academic Questionnaire System**. This index provides direct access to the key components of the project's specialized documentation.
 
-## 📁 Key Components
+## Key Components
 
 ### 1. [README (Root)](../README.md)
 The high-level entry point for the project, covering overview, installation, and basic usage.
