@@ -156,7 +156,8 @@ const App: React.FC = () => {
       setActiveSession(newSession);
       setView('FACULTY_LIVE');
     } catch (e) {
-      handleGenericError(e, "Could not launch session. Please check your network connection or Firebase rules.");
+      secureLog('Launch Error:', e);
+      showFeedback("Could not launch session. Please check your network connection or Firebase rules.", "error", "Launch Failed", true);
     }
   };
 
@@ -213,7 +214,8 @@ const App: React.FC = () => {
 
       await update(sessionRef, updates);
     } catch (e) {
-      handleGenericError(e, "Failed to submit your response. Please check your connection.");
+      secureLog('Submission Error:', e);
+      showFeedback("Failed to submit your response. Please check your connection.", "error", "Connectivity Issue", true);
     }
   };
 
@@ -296,7 +298,8 @@ const App: React.FC = () => {
         showFeedback('There are no active academic sessions detected in the database.', 'info', 'No Active Sessions');
       }
     } catch (e) {
-      handleGenericError(e, "An error occurred while joining the session.");
+      secureLog('Join Error:', e);
+      showFeedback("An error occurred while joining the session. Please check your network or academic code.", "error", "System Error", true);
     }
   };
 

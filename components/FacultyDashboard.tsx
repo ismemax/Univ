@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Assessment, QuestionType } from '../types';
 import { STORAGE_KEYS } from '../constants';
+import { useFeedback } from './FeedbackContext';
 
 interface FacultyDashboardProps {
   user: User;
@@ -11,6 +12,7 @@ interface FacultyDashboardProps {
 }
 
 const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, onStartSession, onEditDraft }) => {
+  const { showFeedback } = useFeedback();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'DRAFTS'>('ALL');
 
@@ -30,13 +32,24 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
   }, []);
 
   const deleteAssessment = (id: string) => {
-    try {
-      const updated = assessments.filter(a => a.id !== id);
-      localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updated));
-      setAssessments(updated);
-    } catch (e) {
-      console.error("Failed to delete assessment:", e);
-    }
+    showFeedback(
+      "Are you sure you want to permanently delete this assessment bundle? This action cannot be undone.",
+      "warning",
+      "Confirm Deletion",
+      true,
+      () => {
+        try {
+          const updated = assessments.filter(a => a.id !== id);
+          localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(updated));
+          setAssessments(updated);
+          showFeedback("The assessment has been erased from the vault.", "success", "Deleted Successfully");
+        } catch (e) {
+          console.error("Failed to delete assessment:", e);
+        }
+      },
+      "DELETE NOW",
+      "KEEP BUNDLE"
+    );
   };
 
   return (
@@ -126,7 +139,17 @@ const FacultyDashboard: React.FC<FacultyDashboardProps> = ({ user, onCreateNew, 
                     </button>
                   ) : (
                     <button
-                      onClick={() => onStartSession(a)}
+                      onClick={() => {
+                        showFeedback(
+                          `Do you want to launch "${a.title || 'this assessment'}" as a live session? Students will be able to join immediately via access code.`,
+                          "info",
+                          "Launch Session",
+                          true,
+                          () => onStartSession(a),
+                          "START LIVE",
+                          "STAY IN DASHBOARD"
+                        );
+                      }}
                       className="flex-1 bg-umak-blue text-white font-black py-2.5 rounded-lg text-[10px] transition-all uppercase tracking-wider shadow-sm hover:shadow-md"
                     >
                       Launch Live

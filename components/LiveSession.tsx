@@ -279,7 +279,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
       async () => {
         const sessionRef = ref(db, 'active_session');
         await update(sessionRef, { status: 'ended' });
-        showFeedback("Session concluded and results archived.", "success", "Session Ended");
+        showFeedback("Session concluded and results archived.", "success", "Session Ended", true);
       },
       "END SESSION",
       "CANCEL"

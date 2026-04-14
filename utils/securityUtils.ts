@@ -94,5 +94,5 @@ export const secureLog = (message: string, data?: any) => {
  */
 export const handleGenericError = (error: any, customMsg = 'An unexpected error occurred. Please try again.') => {
     secureLog('Caught error:', error);
-    alert(customMsg);
+    // Native alert removed to favor specialized UI popups via showFeedback in components
 };
