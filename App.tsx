@@ -10,7 +10,7 @@ import StudentPoll from './components/StudentPoll';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useFeedback } from './components/FeedbackContext';
 
-import { Icons, STORAGE_KEYS } from './constants';
+import { Icons, STORAGE_KEYS, ANIMAL_NAMES } from './constants';
 import { db, ref, onValue, set, update, get } from './firebase';
 import { secureLog, handleGenericError, sanitizeInput } from './utils/securityUtils';
 
@@ -278,6 +278,18 @@ const App: React.FC = () => {
                 const sessionRef = ref(db, 'active_session');
                 await update(sessionRef, { participantsCount: dbIncrement(1) });
                 markUserJoined(session.id);
+
+                // If name is NOT required, assign a random animal name for the registry
+                if (!session.requireStudentName) {
+                    const existingAnimal = safeStorage.getItem(`umak_name_${session.id}`);
+                    if (!existingAnimal) {
+                        const randomAnimal = `Anonymous ${ANIMAL_NAMES[Math.floor(Math.random() * ANIMAL_NAMES.length)]}`;
+                        const finalName = `${randomAnimal} #${Math.floor(100 + Math.random() * 899)}`;
+                        safeStorage.setItem(`umak_name_${session.id}`, finalName);
+                        // Register this name immediately in the registry
+                        handleRegisterIdentity(finalName, session.accessCode);
+                    }
+                }
             }
 
             setStudentSession(session);

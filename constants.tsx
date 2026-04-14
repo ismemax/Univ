@@ -30,3 +30,10 @@ export const STORAGE_KEYS = {
   USER: 'umak_user',
   QUESTIONS: 'umak_db_questions',
 };
+
+export const ANIMAL_NAMES = [
+  'Panda', 'Lion', 'Tiger', 'Eagle', 'Dolphin', 'Shark', 'Wolf', 'Bear', 
+  'Fox', 'Owl', 'Koala', 'Monkey', 'Elephant', 'Giraffe', 'Zebra', 'Cheetah',
+  'Penguin', 'Seal', 'Otter', 'Badger', 'Falcon', 'Panther', 'Lynx', 'Raven'
+];
+
