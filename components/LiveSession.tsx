@@ -485,8 +485,12 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                   <div className="py-8 w-full text-center space-y-2">
                     <p className="text-slate-400 font-bold text-xs italic">
                       {session.status === 'waiting' 
-                        ? "The communal lobby is open. Waiting for students to join..."
-                        : "No participants have joined the registry yet."
+                        ? (session.requireStudentName 
+                            ? "Verified identities will appear here once students join the lobby..."
+                            : "Anonymous participants will appear here once they join the lobby...")
+                        : (session.requireStudentName
+                            ? "No verified student identities have joined the registry yet."
+                            : "No anonymous participants have joined the registry yet.")
                       }
                     </p>
                     {session.status === 'waiting' && (
