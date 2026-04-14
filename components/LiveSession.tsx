@@ -482,7 +482,21 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-slate-400 font-bold text-xs italic py-4 w-full text-center">No participants have joined the registry yet.</p>
+                  <div className="py-8 w-full text-center space-y-2">
+                    <p className="text-slate-400 font-bold text-xs italic">
+                      {session.status === 'waiting' 
+                        ? "The communal lobby is open. Waiting for students to join..."
+                        : "No participants have joined the registry yet."
+                      }
+                    </p>
+                    {session.status === 'waiting' && (
+                      <div className="flex justify-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-umak-blue/20 rounded-full animate-bounce"></span>
+                        <span className="w-1.5 h-1.5 bg-umak-blue/40 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="w-1.5 h-1.5 bg-umak-blue/60 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
