@@ -8,6 +8,7 @@ import QuestionnaireCreator from './components/QuestionnaireCreator';
 import LiveSession from './components/LiveSession';
 import StudentPoll from './components/StudentPoll';
 import ErrorBoundary from './components/ErrorBoundary';
+import { useFeedback } from './components/FeedbackContext';
 
 import { Icons, STORAGE_KEYS } from './constants';
 import { db, ref, onValue, set, update, get } from './firebase';
@@ -27,6 +28,8 @@ const App: React.FC = () => {
   const [identities, setIdentities] = useState<Record<string, string>>({});
   const [joinAttempts, setJoinAttempts] = useState(0);
   const [joinCooldown, setJoinCooldown] = useState<number | null>(null);
+  
+  const { showFeedback } = useFeedback();
 
   const GUEST_FACULTY: User = {
     id: 'faculty_guest',
@@ -236,7 +239,7 @@ const App: React.FC = () => {
       secureLog("Attendance registered successfully.");
     } catch (e: any) {
       secureLog("Failed to register identity", e);
-      alert(`Registration Error: ${e.message}`);
+      showFeedback(e.message, 'error', 'Registration Error', true);
     }
   };
 
@@ -244,7 +247,7 @@ const App: React.FC = () => {
     // 1. Cooldown Check (Brute-force protection)
     if (joinCooldown && Date.now() < joinCooldown) {
       const remainingSeconds = Math.ceil((joinCooldown - Date.now()) / 1000);
-      alert(`Security Lockout: Too many failed attempts. Please wait ${remainingSeconds} seconds.`);
+      showFeedback(`Too many failed attempts. Please wait ${remainingSeconds} seconds.`, 'error', 'Security Lockout', true);
       return;
     }
 
@@ -267,7 +270,7 @@ const App: React.FC = () => {
           setJoinCooldown(null);
 
           if (session.status === 'ended') {
-            alert('Session Ended: This session has already concluded.');
+            showFeedback('This academic session has already concluded.', 'warning', 'Session Ended');
           } else {
             // Initialize fingerprint on join
             const { validateSessionIntegrity } = await import('./utils/securityUtils');
@@ -283,13 +286,13 @@ const App: React.FC = () => {
           if (newAttempts >= 5) {
             const cooldownPeriod = Date.now() + 30000; // 30 second penalty
             setJoinCooldown(cooldownPeriod);
-            alert('Security Lockout: 5 failed attempts reached. You are locked out for 30 seconds.');
+            showFeedback('Maximum attempts reached. You are locked out for 30 seconds for security reasons.', 'error', 'Security Lockout', true);
           } else {
-            alert(`Access Denied: The code "${normalizedCode}" does not match. (${5 - newAttempts} attempts remaining)`);
+            showFeedback(`The code "${normalizedCode}" does not match. (${5 - newAttempts} attempts remaining)`, 'error', 'Access Denied');
           }
         }
       } else {
-        alert('Entry Failed: There are no active academic sessions detected.');
+        showFeedback('There are no active academic sessions detected in the database.', 'info', 'No Active Sessions');
       }
     } catch (e) {
       handleGenericError(e, "An error occurred while joining the session.");

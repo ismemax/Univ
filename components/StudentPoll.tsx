@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Session, QuestionType } from '../types';
 import { sanitizeInput, hasUserResponded, markUserResponded } from '../utils/securityUtils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { safeStorage } from '../utils/storageUtils';
+import { useFeedback } from './FeedbackContext';
 
 interface StudentPollProps {
   session: Session;
@@ -13,6 +13,7 @@ interface StudentPollProps {
 }
 
 const StudentPoll: React.FC<StudentPollProps> = ({ session, onRegister, onSubmit, onFinished }) => {
+  const { showFeedback } = useFeedback();
   const currentIdx = session.currentQuestionIndex || 0;
   const activeQ = session.questions[currentIdx];
 
@@ -92,7 +93,8 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onRegister, onSubmit
 
   const handleSubmit = () => {
     if (selectedOption === null || (typeof selectedOption === 'string' && !selectedOption.trim())) {
-      return alert('Please provide a response.');
+      showFeedback('Please provide a response before submitting.', 'warning', 'Action Required');
+      return;
     }
 
     if (session.preventMultipleResponses) {
@@ -353,7 +355,10 @@ const StudentPoll: React.FC<StudentPollProps> = ({ session, onRegister, onSubmit
             <button
               type="button"
               onClick={() => {
-                if (studentName.trim().length < 3) return alert('Please enter your full name (minimum 3 characters)');
+                if (studentName.trim().length < 3) {
+                  showFeedback('Please enter your full name (minimum 3 characters) for verification.', 'warning', 'Invalid Name');
+                  return;
+                }
                 
                 // Proceed immediately for better UX responsiveness
                 setIsNameSet(true);

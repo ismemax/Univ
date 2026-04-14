@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { ViewState } from '../types';
 import { Icons } from '../constants';
+import { useFeedback } from './FeedbackContext';
 
 interface HomeProps {
   setView: (v: ViewState) => void;
@@ -9,13 +9,14 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ setView, onJoin }) => {
+  const { showFeedback } = useFeedback();
   const [code, setCode] = useState('');
 
   const handleJoinClick = () => {
     if (code.length === 4) {
       onJoin(code);
     } else {
-      alert('Please enter a valid 4-digit code');
+      showFeedback('Please enter a valid 4-digit academic code.', 'warning', 'Invalid Code');
     }
   };
 
@@ -65,8 +66,23 @@ const Home: React.FC<HomeProps> = ({ setView, onJoin }) => {
 
           <button
             onClick={() => {
-              const code = prompt("Please enter your 4-digit access code:");
-              if (code) onJoin(code);
+              showFeedback(
+                "Please enter your 4-digit academic access code to join the live assessment session.",
+                "info",
+                "Student Entry",
+                true,
+                (val) => {
+                  if (val.trim().length === 4) {
+                    onJoin(val.trim());
+                  } else {
+                    showFeedback("The academic code must be exactly 4 digits long.", "error", "Invalid Access Code");
+                  }
+                },
+                "JOIN SESSION",
+                "CANCEL",
+                true,
+                "e.g., 1234"
+              );
             }}
             className="w-full bg-white border border-umak-navy text-umak-navy font-bold py-4 rounded-lg hover:bg-slate-50 transition-all uppercase text-xs tracking-widest"
           >

@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { db, ref, update } from '../firebase';
 import { secureLog } from '../utils/securityUtils';
 import { QRCodeSVG } from 'qrcode.react';
+import { useFeedback } from './FeedbackContext';
 
 interface Notification {
   id: string;
@@ -19,6 +20,7 @@ interface LiveSessionProps {
 }
 
 const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
+  const { showFeedback } = useFeedback();
   const currentIdx = session.currentQuestionIndex || 0;
   const activeQ = session.questions[currentIdx];
 
@@ -124,7 +126,7 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
       }
     } catch (err) {
       console.error("Pause/Resume failed:", err);
-      alert("Failed to update session status. Please check your connection.");
+      showFeedback("Failed to update session status. Please check your connection.", "error", "System Error");
     } finally {
       setIsProcessing(false);
     }
@@ -261,17 +263,27 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
 
       doc.save(`UMAK_Assessment_Report.pdf`);
       secureLog("PDF saved successfully.");
-    } catch (err) {
+      showFeedback("Academic report generated successfully.", "success", "Download Complete");
+    } catch (err: any) {
       secureLog("PDF Error:", err);
-      alert("PDF Error: The generation failed. Please check the console for details.");
+      showFeedback(`The generation failed: ${err.message}`, "error", "PDF Error", true);
     }
   };
 
   const handleEndSession = async () => {
-    if (window.confirm("Are you sure you want to end this live assessment? Final results will be generated.")) {
-      const sessionRef = ref(db, 'active_session');
-      await update(sessionRef, { status: 'ended' });
-    }
+    showFeedback(
+      "Are you sure you want to end this live assessment? Final results will be generated and archived.",
+      "warning",
+      "End Assessment",
+      true,
+      async () => {
+        const sessionRef = ref(db, 'active_session');
+        await update(sessionRef, { status: 'ended' });
+        showFeedback("Session concluded and results archived.", "success", "Session Ended");
+      },
+      "END SESSION",
+      "CANCEL"
+    );
   };
 
   if (!session || !activeQ) {

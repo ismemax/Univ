@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Question, QuestionType, Assessment } from '../types';
 import { sanitizeInput } from '../utils/securityUtils';
+import { useFeedback } from './FeedbackContext';
 
 interface QuestionnaireCreatorProps {
   initialData?: Assessment;
@@ -11,6 +12,7 @@ interface QuestionnaireCreatorProps {
 }
 
 const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData, onCreate, onSaveDraft, onCancel }) => {
+  const { showFeedback } = useFeedback();
   const [assessmentTitle, setAssessmentTitle] = useState(initialData?.title || 'Academic Assessment Bundle');
   const [questions, setQuestions] = useState<Question[]>(initialData?.questions || [{
     id: Math.random().toString(36).substring(7),
@@ -71,11 +73,17 @@ const QuestionnaireCreator: React.FC<QuestionnaireCreatorProps> = ({ initialData
   });
 
   const validate = () => {
-    if (!assessmentTitle.trim()) { alert('Please enter an assessment title.'); return false; }
+    if (!assessmentTitle.trim()) { 
+      showFeedback('Please enter an assessment title before saving.', 'warning', 'Missing Title'); 
+      return false; 
+    }
     for (const q of questions) {
-      if (!q.text.trim()) { alert('All questions must have text.'); return false; }
+      if (!q.text.trim()) { 
+        showFeedback('Every academic prompt must contain text for student clearity.', 'warning', 'Incomplete Question'); 
+        return false; 
+      }
       if ((q.type === QuestionType.MULTIPLE_CHOICE || q.type === QuestionType.RANKING) && q.options.some(o => !o.trim())) {
-        alert('All options for Multiple Choice and Ranking must be filled.');
+        showFeedback('All provided choices for Multiple Choice and Ranking must have content.', 'warning', 'Missing Options');
         return false;
       }
     }
