@@ -2,6 +2,7 @@
 /// <reference types="vite/client" />
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, set, update, get, increment } from "firebase/database";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // Firebase project configuration
 // We use VITE_ environment variables for better security and portability.
@@ -23,6 +24,20 @@ try {
     if (firebaseConfig.apiKey.startsWith('AIza')) {
         app = initializeApp(firebaseConfig);
         db = getDatabase(app);
+
+        // --- App Check Infrastructure ---
+        // reCAPTCHA v3 site key from the Firebase/Google console
+        const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+        
+        if (siteKey) {
+            initializeAppCheck(app, {
+                provider: new ReCaptchaV3Provider(siteKey),
+                isTokenAutoRefreshEnabled: true
+            });
+        } else if (import.meta.env.DEV) {
+            // Enable debug mode for local development to avoid reCAPTCHA blocks
+            (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        }
     } else {
         console.error("Critical Security Error: Firebase configuration is invalid or missing.");
     }

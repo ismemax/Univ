@@ -1,0 +1,53 @@
+{
+  "rules": {
+    "active_session": {
+      ".read": "true",
+      ".write": "false",
+      
+      "status": {
+        ".validate": "newData.isString() && (newData.val() == 'active' || newData.val() == 'paused' || newData.val() == 'ended' || newData.val() == 'waiting')"
+      },
+      
+      "participantsCount": {
+        ".write": "true",
+        ".validate": "newData.isNumber() && newData.val() == (data.exists() ? data.val() : 0) + 1"
+      },
+      
+      "allResponses": {
+        "$questionIndex": {
+          // Only allow responses if the session is active
+          ".write": "root.child('active_session/status').val() == 'active'",
+          
+          "namedResponses": {
+             "$responseId": {
+                // Prevent overwriting existing responses
+                ".validate": "!data.exists() && newData.hasChildren(['name', 'answer'])"
+             }
+          },
+          
+          "text": {
+             "$responseId": {
+                ".validate": "!data.exists() && newData.isString()"
+             }
+          },
+          
+          // Atomic MCQ counters
+          "$optionIndex": {
+             ".validate": "newData.isNumber() && newData.val() == (data.exists() ? data.val() : 0) + 1"
+          }
+        }
+      }
+    },
+    
+    "attendance": {
+      "$accessCode": {
+        ".read": "true",
+        "$studentNameKey": {
+          // One-time name registration (cannot be modified once set)
+          ".write": "!data.exists()",
+          ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 50"
+        }
+      }
+    }
+  }
+}
