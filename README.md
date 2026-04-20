@@ -1,9 +1,25 @@
-# UMak Academic Questionnaire System: Professional Documentation
+# UAQS: University Academic Questionnaire System
+> **Official Real-time Assessment Platform for the University of Makati**
 
-## 1. Executive Summary
-The University of Makati Academic Questionnaire System (UAQS) is a real-time, web-based platform designed to facilitate interactive academic assessments, polls, and research surveys within the university community. It provides faculty members with tools to create structured assessments and students with a low-friction interface for participation.
+[![Tech Stack](https://img.shields.io/badge/Stack-React_19_|_Firebase_|_Vite-blue)](docs/MASTER_DOCUMENTATION.md)
+[![Documentation](https://img.shields.io/badge/Documentation-Master_Spec-green)](docs/MASTER_DOCUMENTATION.md)
 
-## 2. Quick Start and Installation
+---
+
+## 🚀 Overview
+The **University Academic Questionnaire System (UAQS)** is a sophisticated, real-time polling and assessment engine designed to enhance classroom engagement at the University of Makati. Built with a focus on low-latency synchronization and academic integrity, it allows faculty to execute interactive assessments with seamless data visualization.
+
+### 📖 Central Documentation
+For detailed specifications, please refer to the modular documentation hub:
+**[Documentation Index](docs/INDEX.md)**
+
+1.  **[Vision & Strategy](docs/VISION.md)**
+2.  **[Architecture](docs/ARCHITECTURE.md)**
+3.  **[Database Schema](docs/DATABASE.md)**
+4.  **[Security Protocol](docs/SECURITY.md)**
+5.  **[Developer Setup](docs/SETUP.md)**
+
+---
 
 ### 2.1 Technical Requirements
 * Node.js (v16 or higher)
