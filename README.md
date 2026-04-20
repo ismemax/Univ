@@ -6,10 +6,10 @@
 
 ---
 
-## 🚀 Overview
+## Overview
 The **University Academic Questionnaire System (UAQS)** is a sophisticated, real-time polling and assessment engine designed to enhance classroom engagement at the University of Makati. Built with a focus on low-latency synchronization and academic integrity, it allows faculty to execute interactive assessments with seamless data visualization.
 
-### 📖 Central Documentation
+### Central Documentation
 For detailed specifications, please refer to the modular documentation hub:
 **[Documentation Index](docs/INDEX.md)**
 
