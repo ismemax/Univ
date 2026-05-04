@@ -79,25 +79,42 @@ const LiveSession: React.FC<LiveSessionProps> = ({ session, onEnd }) => {
   const COLORS_PALETTE = ['#004A98', '#FDB813', '#47528A', '#28336B', '#060E33'];
 
   const handleStartSession = async () => {
-    const sessionRef = ref(db, 'active_session');
-    await update(sessionRef, {
-      status: 'active',
-      isStarted: true,
-      startTime: Date.now()
-    });
+    if (isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const sessionRef = ref(db, 'active_session');
+      await update(sessionRef, {
+        status: 'active',
+        isStarted: true,
+        startTime: Date.now()
+      });
+    } catch (err) {
+      console.error("Start session failed:", err);
+      showFeedback("Failed to start the assessment. Please check your connection or Firebase rules.", "error", "System Error");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleNextQuestion = async () => {
-    if (currentIdx >= session.questions.length - 1) return;
+    if (isProcessing || currentIdx >= session.questions.length - 1) return;
 
-    const sessionRef = ref(db, 'active_session');
-    await update(sessionRef, {
-      currentQuestionIndex: currentIdx + 1,
-      startTime: Date.now(), // Reset timer for next question
-      status: 'active',
-      pausedAt: null
-    });
-    setTimeLeft(session.questions[currentIdx + 1].timeLimit);
+    setIsProcessing(true);
+    try {
+      const sessionRef = ref(db, 'active_session');
+      await update(sessionRef, {
+        currentQuestionIndex: currentIdx + 1,
+        startTime: Date.now(), // Reset timer for next question
+        status: 'active',
+        pausedAt: null
+      });
+      setTimeLeft(session.questions[currentIdx + 1].timeLimit);
+    } catch (err) {
+      console.error("Next question failed:", err);
+      showFeedback("Failed to advance to the next question. Please check your connection.", "error", "System Error");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const togglePause = async () => {

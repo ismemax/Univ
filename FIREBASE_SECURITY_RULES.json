@@ -2,7 +2,7 @@
   "rules": {
     "active_session": {
       ".read": "true",
-      ".write": "false",
+      ".write": "!data.exists() || !newData.exists() || data.child('status').val() === 'active' || data.child('status').val() === 'paused' || data.child('status').val() === 'waiting' || data.child('status').val() === 'ended'",
       
       "status": {
         ".validate": "newData.isString() && (newData.val() == 'active' || newData.val() == 'paused' || newData.val() == 'ended' || newData.val() == 'waiting')"
